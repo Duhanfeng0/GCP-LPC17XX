@@ -29,3 +29,11 @@
 *.ewt
 *.ewp
 *.ewd
+*.o
+*.dep
+*.wsdt
+*.linf
+*.linf
+*.dep
+*.dni
+*.wsdt
