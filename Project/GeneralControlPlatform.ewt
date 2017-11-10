@@ -2782,9 +2782,9 @@
       <name>DAC</name>
     </group>
     <group>
-      <name>Enet</name>
+      <name>ENET</name>
       <file>
-        <name>$PROJ_DIR$\..\SysPeripheral\Enet\EnetDataStructDef.h</name>
+        <name>$PROJ_DIR$\..\SysPeripheral\ENET\EnetDataStructDef.h</name>
       </file>
       <file>
         <name>$PROJ_DIR$\..\SysPeripheral\Enet\EnetInterface.h</name>
@@ -2794,7 +2794,10 @@
       <name>Epprom</name>
     </group>
     <group>
-      <name>FlashRW</name>
+      <name>EXTI</name>
+    </group>
+    <group>
+      <name>FLASH</name>
     </group>
     <group>
       <name>GPIO</name>

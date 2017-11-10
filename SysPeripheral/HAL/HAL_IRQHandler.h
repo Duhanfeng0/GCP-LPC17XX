@@ -1,57 +1,100 @@
 #ifndef  __HAL_IRQ_HANDLER_H
 #define  __HAL_IRQ_HANDLER_H
 
-//DMA通道
-#define LPC_DMA_CH_COUNT            (8)
+#include "chip.h"
 
-//IO中断组
-#define LPC_GPIOINT_PORT_COUNT      (2)
-#define LPC_GPIOINT_PIN_COUNT       (32)
-
-typedef struct 
+typedef enum
 {
-    void (*pf_SysTick_Update        )(void);
-    void (*pf_SysTick_Handler       )(void);
-    void (*pf_WDT_IRQHandler        )(void);
-    void (*pf_TIMER0_IRQHandler     )(void);
-    void (*pf_TIMER1_IRQHandler     )(void);
-    void (*pf_TIMER2_IRQHandler     )(void);
-    void (*pf_TIMER3_IRQHandler     )(void);
-    void (*pf_UART0_IRQHandler      )(void);
-    void (*pf_UART1_IRQHandler      )(void);
-    void (*pf_UART2_IRQHandler      )(void);
-    void (*pf_UART3_IRQHandler      )(void);
-    void (*pf_PWM1_IRQHandler       )(void);
-    void (*pf_I2C0_IRQHandler       )(void);
-    void (*pf_I2C1_IRQHandler       )(void);
-    void (*pf_I2C2_IRQHandler       )(void);
-    void (*pf_SPI_IRQHandler        )(void);
-    void (*pf_SSP0_IRQHandler       )(void);
-    void (*pf_SSP1_IRQHandler       )(void);
-    void (*pf_PLL0_IRQHandler       )(void);
-    void (*pf_RTC_IRQHandler        )(void);
-    void (*pf_EINT0_IRQHandler      )(void);
-    void (*pf_EINT1_IRQHandler      )(void);
-    void (*pf_EINT2_IRQHandler      )(void);
-    void (*pf_ADC_IRQHandler        )(void);
-    void (*pf_BOD_IRQHandler        )(void);
-    void (*pf_USB_IRQHandler        )(void);
-    void (*pf_CAN_IRQHandler        )(void);
-    void (*pf_I2S_IRQHandler        )(void);
-    void (*pf_ENET_IRQHandler       )(void);
-    void (*pf_RIT_IRQHandler        )(void);
-    void (*pf_MCPWM_IRQHandler      )(void);
-    void (*pf_QEI_IRQHandler        )(void);
-    void (*pf_PLL1_IRQHandler       )(void);
-    void (*pf_USBActivity_IRQHandler)(void);
-    void (*pf_CANActivity_IRQHandler)(void);
+    //系统滴答
+    IRQ_TRG_SYSTICK_UPDATE = 0,
+    IRQ_TRG_SYSTICK_OS,
     
-    void (*pf_DMA_CHx_IRQHandler[LPC_DMA_CH_COUNT])(void);
-    void (*pf_GPIO_IRQHandler[LPC_GPIOINT_PORT_COUNT][LPC_GPIOINT_PIN_COUNT])(void);
-    
-}LPC17XX_IRQ_INTERFACE;
+    //串口
+    IRQ_TRG_UART0,
+    IRQ_TRG_UART1,
+    IRQ_TRG_UART2,
+    IRQ_TRG_UART3,
 
-extern LPC17XX_IRQ_INTERFACE  g_IRQInterface;
+    //DMA通道
+    IRQ_TRG_DMA_CH1,
+    IRQ_TRG_DMA_CH2,
+    IRQ_TRG_DMA_CH3,
+    IRQ_TRG_DMA_CH4,
+    IRQ_TRG_DMA_CH5,
+    IRQ_TRG_DMA_CH6,
+    IRQ_TRG_DMA_CH7,
+    IRQ_TRG_DMA_CH8,
+    
+    //GPIO中断
+    IRQ_TRG_GPIOINT0_00,
+    IRQ_TRG_GPIOINT0_01,
+    IRQ_TRG_GPIOINT0_02,
+    IRQ_TRG_GPIOINT0_03,
+    IRQ_TRG_GPIOINT0_04,
+    IRQ_TRG_GPIOINT0_05,
+    IRQ_TRG_GPIOINT0_06,
+    IRQ_TRG_GPIOINT0_07,
+    IRQ_TRG_GPIOINT0_08,
+    IRQ_TRG_GPIOINT0_09,
+    IRQ_TRG_GPIOINT0_10,
+    IRQ_TRG_GPIOINT0_11,
+    IRQ_TRG_GPIOINT0_12,
+    IRQ_TRG_GPIOINT0_13,
+    IRQ_TRG_GPIOINT0_14,
+    IRQ_TRG_GPIOINT0_15,
+    IRQ_TRG_GPIOINT0_16,
+    IRQ_TRG_GPIOINT0_17,
+    IRQ_TRG_GPIOINT0_18,
+    IRQ_TRG_GPIOINT0_19,
+    IRQ_TRG_GPIOINT0_20,
+    IRQ_TRG_GPIOINT0_21,
+    IRQ_TRG_GPIOINT0_22,
+    IRQ_TRG_GPIOINT0_23,
+    IRQ_TRG_GPIOINT0_24,
+    IRQ_TRG_GPIOINT0_25,
+    IRQ_TRG_GPIOINT0_26,
+    IRQ_TRG_GPIOINT0_27,
+    IRQ_TRG_GPIOINT0_28,
+    IRQ_TRG_GPIOINT0_29,
+    IRQ_TRG_GPIOINT0_30,
+    IRQ_TRG_GPIOINT0_31,
+
+    IRQ_TRG_GPIOINT2_00,
+    IRQ_TRG_GPIOINT2_01,
+    IRQ_TRG_GPIOINT2_02,
+    IRQ_TRG_GPIOINT2_03,
+    IRQ_TRG_GPIOINT2_04,
+    IRQ_TRG_GPIOINT2_05,
+    IRQ_TRG_GPIOINT2_06,
+    IRQ_TRG_GPIOINT2_07,
+    IRQ_TRG_GPIOINT2_08,
+    IRQ_TRG_GPIOINT2_09,
+    IRQ_TRG_GPIOINT2_10,
+    IRQ_TRG_GPIOINT2_11,
+    IRQ_TRG_GPIOINT2_12,
+    IRQ_TRG_GPIOINT2_13,
+    IRQ_TRG_GPIOINT2_14,
+    IRQ_TRG_GPIOINT2_15,
+    IRQ_TRG_GPIOINT2_16,
+    IRQ_TRG_GPIOINT2_17,
+    IRQ_TRG_GPIOINT2_18,
+    IRQ_TRG_GPIOINT2_19,
+    IRQ_TRG_GPIOINT2_20,
+    IRQ_TRG_GPIOINT2_21,
+    IRQ_TRG_GPIOINT2_22,
+    IRQ_TRG_GPIOINT2_23,
+    IRQ_TRG_GPIOINT2_24,
+    IRQ_TRG_GPIOINT2_25,
+    IRQ_TRG_GPIOINT2_26,
+    IRQ_TRG_GPIOINT2_27,
+    IRQ_TRG_GPIOINT2_28,
+    IRQ_TRG_GPIOINT2_29,
+    IRQ_TRG_GPIOINT2_30,
+    IRQ_TRG_GPIOINT2_31,
+    
+}IRQ_TRIGGER_SOURCE;
+
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,6 +115,23 @@ void HAL_IRQ_NullEntry(void);
   * @retval None
   */
 void HAL_IRQ_Init(void);
+      
+
+/**
+  * @brief  设置中断触发回调
+  * @param  ptr 回调指针
+  * @param  ulTrgSource 触发源
+  * @retval None
+  */
+void HAL_IRQ_SetTrgCallback(void (*ptr)(void), uint32_t ulTrgSource);
+
+
+/**
+  * @brief  释放中断触发回调
+  * @param  ulTrgSource 触发源
+  * @retval None
+  */
+void HAL_IRQ_ReleaseTrgCallback(uint32_t ulTrgSource);
 
 
 #ifdef __cplusplus

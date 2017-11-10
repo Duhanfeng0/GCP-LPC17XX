@@ -83,6 +83,6 @@ void HAL_SysTick_Init(uint32_t ulTickTime)
     HAL_SysTick_SetTickTime(ulTickTime);
     
     //设置系统滴答中断回调
-    g_IRQInterface.pf_SysTick_Update = HAL_SysTick_Update;
+    HAL_IRQ_SetTrgCallback(HAL_SysTick_Update, IRQ_TRG_SYSTICK_UPDATE);
  
 }

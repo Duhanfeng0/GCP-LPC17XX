@@ -30,7 +30,60 @@
 
 #endif
 
-LPC17XX_IRQ_INTERFACE  g_IRQInterface;  //全局中断回调指针接口
+      
+//DMA通道
+#define LPC_DMA_CH_COUNT            (8)
+
+//IO中断组
+#define LPC_GPIOINT_PORT_COUNT      (2)
+#define LPC_GPIOINT_PIN_COUNT       (32)
+
+typedef struct 
+{
+    void (*pf_SysTick_Update        )(void);
+    void (*pf_SysTick_Handler       )(void);
+    void (*pf_WDT_IRQHandler        )(void);
+    void (*pf_TIMER0_IRQHandler     )(void);
+    void (*pf_TIMER1_IRQHandler     )(void);
+    void (*pf_TIMER2_IRQHandler     )(void);
+    void (*pf_TIMER3_IRQHandler     )(void);
+    void (*pf_UART0_IRQHandler      )(void);
+    void (*pf_UART1_IRQHandler      )(void);
+    void (*pf_UART2_IRQHandler      )(void);
+    void (*pf_UART3_IRQHandler      )(void);
+    void (*pf_PWM1_IRQHandler       )(void);
+    void (*pf_I2C0_IRQHandler       )(void);
+    void (*pf_I2C1_IRQHandler       )(void);
+    void (*pf_I2C2_IRQHandler       )(void);
+    void (*pf_SPI_IRQHandler        )(void);
+    void (*pf_SSP0_IRQHandler       )(void);
+    void (*pf_SSP1_IRQHandler       )(void);
+    void (*pf_PLL0_IRQHandler       )(void);
+    void (*pf_RTC_IRQHandler        )(void);
+    void (*pf_EINT0_IRQHandler      )(void);
+    void (*pf_EINT1_IRQHandler      )(void);
+    void (*pf_EINT2_IRQHandler      )(void);
+    void (*pf_ADC_IRQHandler        )(void);
+    void (*pf_BOD_IRQHandler        )(void);
+    void (*pf_USB_IRQHandler        )(void);
+    void (*pf_CAN_IRQHandler        )(void);
+    void (*pf_I2S_IRQHandler        )(void);
+    void (*pf_ENET_IRQHandler       )(void);
+    void (*pf_RIT_IRQHandler        )(void);
+    void (*pf_MCPWM_IRQHandler      )(void);
+    void (*pf_QEI_IRQHandler        )(void);
+    void (*pf_PLL1_IRQHandler       )(void);
+    void (*pf_USBActivity_IRQHandler)(void);
+    void (*pf_CANActivity_IRQHandler)(void);
+    
+    void (*pf_DMA_CHx_IRQHandler[LPC_DMA_CH_COUNT])(void);
+    void (*pf_GPIO_IRQHandler[LPC_GPIOINT_PORT_COUNT][LPC_GPIOINT_PIN_COUNT])(void);
+    
+}LPC17XX_IRQ_INTERFACE;
+
+
+static LPC17XX_IRQ_INTERFACE  g_IRQInterface = {0};  //全局中断回调指针接口
+
 
 
 /**
@@ -99,6 +152,217 @@ void HAL_IRQ_Init(void)
     
 }
 
+
+/**
+  * @brief  设置中断触发回调
+  * @param  ptr 回调指针
+  * @param  ulTrgSource 触发源
+  * @retval None
+  */
+void HAL_IRQ_SetTrgCallback(void (*ptr)(void), uint32_t ulTrgSource)
+{
+    if (ptr == NULL) 
+    {
+        return;
+    }
+    
+    switch (ulTrgSource)
+    {
+
+    //系统滴答
+    case IRQ_TRG_SYSTICK_UPDATE: g_IRQInterface.pf_SysTick_Update =  ptr; break;
+    case IRQ_TRG_SYSTICK_OS:  g_IRQInterface.pf_SysTick_Handler =  ptr; break;
+    
+    //串口
+    case IRQ_TRG_UART0: g_IRQInterface.pf_UART0_IRQHandler =  ptr; break;
+    case IRQ_TRG_UART1: g_IRQInterface.pf_UART1_IRQHandler =  ptr; break;
+    case IRQ_TRG_UART2: g_IRQInterface.pf_UART2_IRQHandler =  ptr; break;
+    case IRQ_TRG_UART3: g_IRQInterface.pf_UART3_IRQHandler =  ptr; break;
+
+    //DMA通道
+    case IRQ_TRG_DMA_CH1: 
+    case IRQ_TRG_DMA_CH2: 
+    case IRQ_TRG_DMA_CH3: 
+    case IRQ_TRG_DMA_CH4: 
+    case IRQ_TRG_DMA_CH5: 
+    case IRQ_TRG_DMA_CH6: 
+    case IRQ_TRG_DMA_CH7: 
+    case IRQ_TRG_DMA_CH8: g_IRQInterface.pf_DMA_CHx_IRQHandler[ulTrgSource - IRQ_TRG_DMA_CH1] =  ptr; break;
+    
+    //GPIO中断
+    case IRQ_TRG_GPIOINT0_00:
+    case IRQ_TRG_GPIOINT0_01:
+    case IRQ_TRG_GPIOINT0_02:
+    case IRQ_TRG_GPIOINT0_03:
+    case IRQ_TRG_GPIOINT0_04:
+    case IRQ_TRG_GPIOINT0_05:
+    case IRQ_TRG_GPIOINT0_06:
+    case IRQ_TRG_GPIOINT0_07:
+    case IRQ_TRG_GPIOINT0_08:
+    case IRQ_TRG_GPIOINT0_09:
+    case IRQ_TRG_GPIOINT0_10:
+    case IRQ_TRG_GPIOINT0_11:
+    case IRQ_TRG_GPIOINT0_12:
+    case IRQ_TRG_GPIOINT0_13:
+    case IRQ_TRG_GPIOINT0_14:
+    case IRQ_TRG_GPIOINT0_15:
+    case IRQ_TRG_GPIOINT0_16:
+    case IRQ_TRG_GPIOINT0_17:
+    case IRQ_TRG_GPIOINT0_18:
+    case IRQ_TRG_GPIOINT0_19:
+    case IRQ_TRG_GPIOINT0_20:
+    case IRQ_TRG_GPIOINT0_21:
+    case IRQ_TRG_GPIOINT0_22:
+    case IRQ_TRG_GPIOINT0_23:
+    case IRQ_TRG_GPIOINT0_24:
+    case IRQ_TRG_GPIOINT0_25:
+    case IRQ_TRG_GPIOINT0_26:
+    case IRQ_TRG_GPIOINT0_27:
+    case IRQ_TRG_GPIOINT0_28:
+    case IRQ_TRG_GPIOINT0_29:
+    case IRQ_TRG_GPIOINT0_30:
+    case IRQ_TRG_GPIOINT0_31:
+
+    case IRQ_TRG_GPIOINT2_00:
+    case IRQ_TRG_GPIOINT2_01:
+    case IRQ_TRG_GPIOINT2_02:
+    case IRQ_TRG_GPIOINT2_03:
+    case IRQ_TRG_GPIOINT2_04:
+    case IRQ_TRG_GPIOINT2_05:
+    case IRQ_TRG_GPIOINT2_06:
+    case IRQ_TRG_GPIOINT2_07:
+    case IRQ_TRG_GPIOINT2_08:
+    case IRQ_TRG_GPIOINT2_09:
+    case IRQ_TRG_GPIOINT2_10:
+    case IRQ_TRG_GPIOINT2_11:
+    case IRQ_TRG_GPIOINT2_12:
+    case IRQ_TRG_GPIOINT2_13:
+    case IRQ_TRG_GPIOINT2_14:
+    case IRQ_TRG_GPIOINT2_15:
+    case IRQ_TRG_GPIOINT2_16:
+    case IRQ_TRG_GPIOINT2_17:
+    case IRQ_TRG_GPIOINT2_18:
+    case IRQ_TRG_GPIOINT2_19:
+    case IRQ_TRG_GPIOINT2_20:
+    case IRQ_TRG_GPIOINT2_21:
+    case IRQ_TRG_GPIOINT2_22:
+    case IRQ_TRG_GPIOINT2_23:
+    case IRQ_TRG_GPIOINT2_24:
+    case IRQ_TRG_GPIOINT2_25:
+    case IRQ_TRG_GPIOINT2_26:
+    case IRQ_TRG_GPIOINT2_27:
+    case IRQ_TRG_GPIOINT2_28:
+    case IRQ_TRG_GPIOINT2_29:
+    case IRQ_TRG_GPIOINT2_30:
+    case IRQ_TRG_GPIOINT2_31: g_IRQInterface.pf_GPIO_IRQHandler[0][ulTrgSource - IRQ_TRG_GPIOINT0_00] = ptr; break;  //通过数组越界的方式去访问二维数组
+    
+    default: break;
+    }
+    
+}
+
+
+/**
+  * @brief  释放中断触发回调
+  * @param  ulTrgSource 触发源
+  * @retval None
+  */
+void HAL_IRQ_ReleaseTrgCallback(uint32_t ulTrgSource)
+{
+    switch (ulTrgSource)
+    {
+
+    //系统滴答
+    case IRQ_TRG_SYSTICK_UPDATE: g_IRQInterface.pf_SysTick_Update =  HAL_IRQ_NullEntry; break;
+    case IRQ_TRG_SYSTICK_OS:  g_IRQInterface.pf_SysTick_Handler =  HAL_IRQ_NullEntry; break;
+    
+    //串口
+    case IRQ_TRG_UART0: g_IRQInterface.pf_UART0_IRQHandler =  HAL_IRQ_NullEntry; break;
+    case IRQ_TRG_UART1: g_IRQInterface.pf_UART1_IRQHandler =  HAL_IRQ_NullEntry; break;
+    case IRQ_TRG_UART2: g_IRQInterface.pf_UART2_IRQHandler =  HAL_IRQ_NullEntry; break;
+    case IRQ_TRG_UART3: g_IRQInterface.pf_UART3_IRQHandler =  HAL_IRQ_NullEntry; break;
+
+    //DMA通道
+    case IRQ_TRG_DMA_CH1: 
+    case IRQ_TRG_DMA_CH2: 
+    case IRQ_TRG_DMA_CH3: 
+    case IRQ_TRG_DMA_CH4: 
+    case IRQ_TRG_DMA_CH5: 
+    case IRQ_TRG_DMA_CH6: 
+    case IRQ_TRG_DMA_CH7: 
+    case IRQ_TRG_DMA_CH8: g_IRQInterface.pf_DMA_CHx_IRQHandler[ulTrgSource - IRQ_TRG_DMA_CH1] =  HAL_IRQ_NullEntry; break;
+    
+    //GPIO中断
+    case IRQ_TRG_GPIOINT0_00:
+    case IRQ_TRG_GPIOINT0_01:
+    case IRQ_TRG_GPIOINT0_02:
+    case IRQ_TRG_GPIOINT0_03:
+    case IRQ_TRG_GPIOINT0_04:
+    case IRQ_TRG_GPIOINT0_05:
+    case IRQ_TRG_GPIOINT0_06:
+    case IRQ_TRG_GPIOINT0_07:
+    case IRQ_TRG_GPIOINT0_08:
+    case IRQ_TRG_GPIOINT0_09:
+    case IRQ_TRG_GPIOINT0_10:
+    case IRQ_TRG_GPIOINT0_11:
+    case IRQ_TRG_GPIOINT0_12:
+    case IRQ_TRG_GPIOINT0_13:
+    case IRQ_TRG_GPIOINT0_14:
+    case IRQ_TRG_GPIOINT0_15:
+    case IRQ_TRG_GPIOINT0_16:
+    case IRQ_TRG_GPIOINT0_17:
+    case IRQ_TRG_GPIOINT0_18:
+    case IRQ_TRG_GPIOINT0_19:
+    case IRQ_TRG_GPIOINT0_20:
+    case IRQ_TRG_GPIOINT0_21:
+    case IRQ_TRG_GPIOINT0_22:
+    case IRQ_TRG_GPIOINT0_23:
+    case IRQ_TRG_GPIOINT0_24:
+    case IRQ_TRG_GPIOINT0_25:
+    case IRQ_TRG_GPIOINT0_26:
+    case IRQ_TRG_GPIOINT0_27:
+    case IRQ_TRG_GPIOINT0_28:
+    case IRQ_TRG_GPIOINT0_29:
+    case IRQ_TRG_GPIOINT0_30:
+    case IRQ_TRG_GPIOINT0_31:
+
+    case IRQ_TRG_GPIOINT2_00:
+    case IRQ_TRG_GPIOINT2_01:
+    case IRQ_TRG_GPIOINT2_02:
+    case IRQ_TRG_GPIOINT2_03:
+    case IRQ_TRG_GPIOINT2_04:
+    case IRQ_TRG_GPIOINT2_05:
+    case IRQ_TRG_GPIOINT2_06:
+    case IRQ_TRG_GPIOINT2_07:
+    case IRQ_TRG_GPIOINT2_08:
+    case IRQ_TRG_GPIOINT2_09:
+    case IRQ_TRG_GPIOINT2_10:
+    case IRQ_TRG_GPIOINT2_11:
+    case IRQ_TRG_GPIOINT2_12:
+    case IRQ_TRG_GPIOINT2_13:
+    case IRQ_TRG_GPIOINT2_14:
+    case IRQ_TRG_GPIOINT2_15:
+    case IRQ_TRG_GPIOINT2_16:
+    case IRQ_TRG_GPIOINT2_17:
+    case IRQ_TRG_GPIOINT2_18:
+    case IRQ_TRG_GPIOINT2_19:
+    case IRQ_TRG_GPIOINT2_20:
+    case IRQ_TRG_GPIOINT2_21:
+    case IRQ_TRG_GPIOINT2_22:
+    case IRQ_TRG_GPIOINT2_23:
+    case IRQ_TRG_GPIOINT2_24:
+    case IRQ_TRG_GPIOINT2_25:
+    case IRQ_TRG_GPIOINT2_26:
+    case IRQ_TRG_GPIOINT2_27:
+    case IRQ_TRG_GPIOINT2_28:
+    case IRQ_TRG_GPIOINT2_29:
+    case IRQ_TRG_GPIOINT2_30:
+    case IRQ_TRG_GPIOINT2_31: g_IRQInterface.pf_GPIO_IRQHandler[0][ulTrgSource - IRQ_TRG_GPIOINT0_00] = HAL_IRQ_NullEntry; break;  //通过数组越界的方式去访问二维数组
+    
+    default: break;
+    }
+    
+}
 
 
 /**

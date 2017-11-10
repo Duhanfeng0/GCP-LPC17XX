@@ -189,22 +189,22 @@ static void HAL_UART_RxItInit(uint8_t uUartNode)
     {
     case HAL_UART_NODE0: 
         {
-            g_IRQInterface.pf_UART0_IRQHandler = HAL_UART0_RX_IRQHandler; 
+            HAL_IRQ_SetTrgCallback(HAL_UART0_RX_IRQHandler, IRQ_TRG_UART0);
             break;
         }
     case HAL_UART_NODE1: 
         {
-            g_IRQInterface.pf_UART1_IRQHandler = HAL_UART1_RX_IRQHandler; 
+            HAL_IRQ_SetTrgCallback(HAL_UART1_RX_IRQHandler, IRQ_TRG_UART1);
             break;
         }
     case HAL_UART_NODE2: 
         {
-            g_IRQInterface.pf_UART2_IRQHandler = HAL_UART2_RX_IRQHandler; 
+            HAL_IRQ_SetTrgCallback(HAL_UART2_RX_IRQHandler, IRQ_TRG_UART2);
             break;
         }
     case HAL_UART_NODE3: 
         {
-            g_IRQInterface.pf_UART3_IRQHandler = HAL_UART3_RX_IRQHandler; 
+            HAL_IRQ_SetTrgCallback(HAL_UART3_RX_IRQHandler, IRQ_TRG_UART3);
             break;
         }
     default: break; //不应该出现在这里
@@ -234,25 +234,25 @@ static void HAL_UART_DmaTxInit(uint8_t uUartNode)
     case HAL_UART_NODE0: 
         {
             //设置中断回调
-            g_IRQInterface.pf_DMA_CHx_IRQHandler[m_uDmaFreeChannel[0]] = HAL_UART0_DMATC_IRQHandler; 
+            HAL_IRQ_SetTrgCallback(HAL_UART0_DMATC_IRQHandler, IRQ_TRG_DMA_CH1 + m_uDmaFreeChannel[0]);
             break;
         }
     case HAL_UART_NODE1: 
         {
             //设置中断回调
-            g_IRQInterface.pf_DMA_CHx_IRQHandler[m_uDmaFreeChannel[1]] = HAL_UART1_DMATC_IRQHandler; 
+            HAL_IRQ_SetTrgCallback(HAL_UART1_DMATC_IRQHandler, IRQ_TRG_DMA_CH1 + m_uDmaFreeChannel[1]);
             break;
         }
     case HAL_UART_NODE2: 
         {
             //设置中断回调
-            g_IRQInterface.pf_DMA_CHx_IRQHandler[m_uDmaFreeChannel[2]] = HAL_UART2_DMATC_IRQHandler; 
+            HAL_IRQ_SetTrgCallback(HAL_UART2_DMATC_IRQHandler, IRQ_TRG_DMA_CH1 + m_uDmaFreeChannel[2]);
             break;
         }
     case HAL_UART_NODE3: 
         {
             //设置中断回调
-            g_IRQInterface.pf_DMA_CHx_IRQHandler[m_uDmaFreeChannel[3]] = HAL_UART3_DMATC_IRQHandler; 
+            HAL_IRQ_SetTrgCallback(HAL_UART3_DMATC_IRQHandler, IRQ_TRG_DMA_CH1 + m_uDmaFreeChannel[3]);
             break;
         }
     default: break; //不应该出现在这里
