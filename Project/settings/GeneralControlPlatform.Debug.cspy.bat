@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.2\common\bin\cspybat" -f "F:\4. 工作文件\售货机通用控制平台\系统框架\GCP\Project\settings\GeneralControlPlatform.Debug.general.xcl" --backend -f "F:\4. 工作文件\售货机通用控制平台\系统框架\GCP\Project\settings\GeneralControlPlatform.Debug.driver.xcl" 
+"D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\common\bin\cspybat" -f "E:\GitHub\GCP-LPC17XX\Project\settings\GeneralControlPlatform.Debug.general.xcl" --backend -f "E:\GitHub\GCP-LPC17XX\Project\settings\GeneralControlPlatform.Debug.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.2\common\bin\cspybat" -f "F:\4. 工作文件\售货机通用控制平台\系统框架\GCP\Project\settings\GeneralControlPlatform.Debug.general.xcl" "--debug_file=%~1" --backend -f "F:\4. 工作文件\售货机通用控制平台\系统框架\GCP\Project\settings\GeneralControlPlatform.Debug.driver.xcl" 
+"D:\Program Files (x86)\IAR Systems\Embedded Workbench 7.5\common\bin\cspybat" -f "E:\GitHub\GCP-LPC17XX\Project\settings\GeneralControlPlatform.Debug.general.xcl" "--debug_file=%~1" --backend -f "E:\GitHub\GCP-LPC17XX\Project\settings\GeneralControlPlatform.Debug.driver.xcl" 
 
 @echo off 
 :end
