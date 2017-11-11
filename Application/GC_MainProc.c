@@ -23,7 +23,7 @@
 #include "GC_CtrlIOTable.h"
 #include "GC_SysCtrl.h"
 #include "GC_HardwareDef.h"
-
+#include "GC_ComMan.h"
 #include "../DataType/DataType.h"
 
 
@@ -34,14 +34,19 @@
   */
 void GC_Init(void)
 {
-    //硬件初始化
+    //初始化硬件
     GC_HwInit();
     
-    //系统参数初始化
+    //初始化系统参数
     GC_SysParmInit();
     
+    //初始化格子柜系统
+    GC_SysInit();
+    
+    //初始化通信管理单元
+    GC_CMUInit();
+    
 }
-
 
 
 /**
@@ -59,6 +64,9 @@ void GC_MainProc(void)
     
     //按键处理
     GC_KeyProc();
+    
+    //通信处理
+    GC_ComHandler();
     
 }
 

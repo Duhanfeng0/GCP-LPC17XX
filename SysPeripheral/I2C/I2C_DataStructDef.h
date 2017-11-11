@@ -74,11 +74,11 @@ typedef struct
 //I2C BUS CTRL PARAMETER
 typedef struct 
 {
-    uBit16      nFlags;         //标志位,标志设备地址8/16位模式,寄存器地址8/16位模式等
-    uBit16      nDevAddr;       //设备地址
+    uBit16      nFlags;             //标志位,标志设备地址8/16位模式,寄存器地址8/16位模式等
+    uBit16      nDevAddr;           //设备地址
     
-    uBit16      nTimeOut;      //超时时间
-    uBit16      nRetries;      //出错重发次数
+    uBit16      nTimeOut;           //超时时间
+    uBit16      nRetries;           //出错重发次数
     
 }I2C_CTRL_PARM;
 

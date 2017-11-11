@@ -15,11 +15,9 @@
 COM_RCV_CTRL_DATA            m_RcvCtrlData;            //接收控制数据
 RCV_TIME_OUT_CTRL_DATA        m_sRcvTimeOutCtrlData;    //数据重发控制数据    
 COM_DATA_PACK                m_sPackData;            //数据包缓存区
-#ifdef WIN32_VER
-uBit8                        m_pRcvBuf[ENET_DATA_MAX_LENGTH];        //    
-#else
+
 uBit8                        *m_pRcvBuf=NULL;        //    
-#endif
+
 
 
 
@@ -44,10 +42,7 @@ uBit32 COM_PL_PackDataProc(void);                    //数据包处理，接收�
 uBit32 CMU_InitRecCtrlData(void)
 {
     memset(&m_RcvCtrlData , 0 , sizeof(COM_RCV_CTRL_DATA));
-#ifdef WIN32_VER
-    memset(&m_pRcvBuf , 0 , ENET_DATA_MAX_LENGTH);
-    memset(&m_sRcvTimeOutCtrlData , 0 , sizeof(RCV_TIME_OUT_CTRL_DATA));
-#else
+
     if(m_pRcvBuf==NULL)
     {
         m_pRcvBuf = CMU_Malloc(COM_TRANSMIT_BUF_SIZE);
@@ -61,7 +56,7 @@ uBit32 CMU_InitRecCtrlData(void)
     {
         return CMU_ERR_RS_MALLOC_FAIL;
     }
-#endif
+
     return CMU_ERR_SUCCESS;
 }
 
@@ -116,10 +111,13 @@ uBit32 COM_PL_WaitForProcResult(uBit32 *pErrCode)
     if (m_RcvCtrlData.uCmdModule==0)//设备管理模块
     {
         ulRet = m_sExternalFunTable.pf_DEV_CheckLastCmdExeState(m_RcvCtrlData.uDevNo, &ulCmdType, pErrCode);
-    }else//通道管理模块
+    }
+    #ifdef CMU_SUPPORT_CRD
+    else//通道管理模块
     {
         ulRet = m_sExternalFunTable.pf_LAX_CheckLastCmdExeState(m_RcvCtrlData.uCrdNo, m_RcvCtrlData.uDevNo, &ulCmdType, pErrCode);
     }
+    #endif
     
     //已经获取结果
     if (ulRet==0)
@@ -196,9 +194,6 @@ uBit32 COM_PL_PackDataProc(void)
     {
         case TRANSMIT_FIRST_FRAME://起始数据包
             {
-#ifdef RS_MONITOR_ENALBE
-                g_sCmuRsMonitorData.ulRcvBlockCount++;
-#endif
                 COM_PL_ResetRcvCtrlData(m_sPackData.ulID.ulFrameID, m_pRcvBuf, COM_TRANSMIT_BUF_SIZE);
                 m_RcvCtrlData.cReceiving = 1;
                 ulRet = COM_PL_SavePackToRcvCtrlData();
@@ -206,18 +201,12 @@ uBit32 COM_PL_PackDataProc(void)
             break;
         case TRANSMIT_SELF_FRAME: //独立数据包
             {
-#ifdef RS_MONITOR_ENALBE
-                g_sCmuRsMonitorData.ulRcvBlockCount++;
-#endif
                 COM_PL_ResetRcvCtrlData(m_sPackData.ulID.ulFrameID, m_pRcvBuf, COM_TRANSMIT_BUF_SIZE);
                 ulRet = COM_PL_SavePackToRcvCtrlData();
 
                 if (ulRet==CMU_ERR_SUCCESS)
                 {
                     ulRet = CMU_CmdProcess(&m_RcvCtrlData);
-#ifdef RS_MONITOR_ENALBE
-                    g_sCmuRsMonitorData.ulBlockRcvSucCount++;
-#endif
                 }
             }
             break;
@@ -265,9 +254,6 @@ uBit32 COM_PL_PackDataProc(void)
                         if (m_RcvCtrlData.cCheckNum == m_sPackData.pDataBuf[0])
                         {
                             ulRet = CMU_CmdProcess(&m_RcvCtrlData);
-#ifdef RS_MONITOR_ENALBE
-                            g_sCmuRsMonitorData.ulBlockRcvSucCount++;
-#endif
                         }
                         else
                         {
@@ -308,10 +294,6 @@ uBit32 CMU_MainRcvProc(void)
 {
     uBit32 ulRet;
     
-#ifdef SYS_FUN_TEST
-    GPIO_FunTestStart(CMU_CMU_MainRcvProc);
-#endif
-    
     if (m_RcvCtrlData.ulWaitResultCode!=0)      //等待处理结果
     {
         if (COM_PL_WaitForProcResult(&ulRet)!=CMU_ERR_SUCCESS)//未等到处理结果
@@ -327,11 +309,8 @@ uBit32 CMU_MainRcvProc(void)
         if (ulRet)
             return CMU_ERR_SEND_FAIL;
     }
-#ifdef WIN32_VER
-    ulRet = COM_AL_CMUGetPack(&m_sPackData);
-#else
+
     ulRet = COM_AL_GetPack(&m_sPackData);
-#endif
 
     if (ulRet==CMU_ERR_SUCCESS)//成功收到数据包
     {
@@ -347,8 +326,5 @@ uBit32 CMU_MainRcvProc(void)
     if (ulRet==CMU_ERR_CONNECT)
         return CMU_ERR_CONNECT;
 
-#ifdef SYS_FUN_TEST
-    GPIO_FunTestEnd(CMU_CMU_MainRcvProc);
-#endif
     return CMU_ERR_SUCCESS;
 }

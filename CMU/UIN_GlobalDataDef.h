@@ -19,8 +19,8 @@ Copyright (c) 2013, 东莞华科精机有限公司 All rights reserved.
 #ifndef _UIN_GLOBAL_DATA_DEF_
 #define _UIN_GLOBAL_DATA_DEF_
 
-//#define RS_MONITOR_ENALBE                 //通信性能测试开关
-//#define RS_RECORD_ENABLE                  //使能通信出错时记录通信性能状态数据
+//#define CMU_SUPPORT_PERIO                       //支持周期指令
+//#define CMU_SUPPORT_CRD                         //支持坐标系相关指令
 
 
 //UIN模块传输监视数据-------------------------------上位机

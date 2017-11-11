@@ -67,10 +67,10 @@ static void SetSTB(bool bState)
 
 
 /**
-  * @brief  TM1617控制引脚编号设置
-  * @param  ulDataPinNO  数据引脚编号
-  * @param  ulClockPinNO 时钟引脚编号
-  * @param  ulStbPinNO   片选引脚编号
+  * @brief  数码管控制引脚编号设置
+  * @param  ulDataPinNO  数据引脚编号(IO资源表中输出IO组的位置)
+  * @param  ulClockPinNO 时钟引脚编号(IO资源表中输出IO组的位置)
+  * @param  ulStbPinNO   片选引脚编号(IO资源表中输出IO组的位置)
   * @retval None
   */
 void NixieTube_SetCtrlPinNO(uBit32 ulDataPinNO, uBit32 ulClockPinNO, uBit32 ulStbPinNO)
@@ -94,15 +94,3 @@ uBit32 NixieTube_DisNumber(uBit8 uHexData)
     
     return TM1617_DisNumber(uHexData);
 }
-
-
-
-
-
-
-
-
-
-
-
-

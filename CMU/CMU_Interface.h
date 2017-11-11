@@ -90,10 +90,9 @@ extern "C" {
     */
     uBit32 CMU_MainProc(void);    
     
+#ifdef CMU_SUPPORT_CRD
     void CMU_SetIprOutApi(ipr_out_api *pIprOutApi);
-    
-    
-    
+#endif
         /*
     函 数 名：uBit32 CMU_SetComType(uBit32 ulComType)
     功    能：设置控制器与上位机的通信方式

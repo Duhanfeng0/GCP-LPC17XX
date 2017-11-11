@@ -11,7 +11,6 @@
   * 对底层操作函数再一层的封装,以实现基本的协议通信时序.其操作的对象是 
   * I2C_BUS_BASE_OPS_TYPE
   * 
-  * 
   ******************************************************************************
   */
 
@@ -21,8 +20,15 @@
 #include "I2C_DataStructDef.h"
 
 
-//多字节发送函数
-//对 I2C_BUS_BASE_OPS_TYPE的应用,实现字节发送的时序
+/**
+  * @brief  数据发送
+  * @param  pBaseOps  基本操作接口
+  * @param  pCtrlParm 控制参数接口
+  * @param  nRegAddr  寄存器地址
+  * @param  pBuff     数据缓冲区地址
+  * @param  ulCount   要发送的字节数
+  * @retval 0-成功 非0-失败
+  */
 static uBit32 I2C_SendBuff(I2C_BUS_BASE_OPS_TYPE *pBaseOps, I2C_CTRL_PARM *pCtrlParm, 
                            uBit16 nRegAddr, const uBit8 *pBuff, uBit32 ulCount)
 {
@@ -68,8 +74,15 @@ static uBit32 I2C_SendBuff(I2C_BUS_BASE_OPS_TYPE *pBaseOps, I2C_CTRL_PARM *pCtrl
 }
 
 
-//多字节接收函数
-//对 I2C_BUS_BASE_OPS_TYPE的应用,实现字节接收的时序
+/**
+  * @brief  数据接收
+  * @param  pBaseOps  基本操作接口
+  * @param  pCtrlParm 控制参数接口
+  * @param  nRegAddr  寄存器地址
+  * @param  pBuff     数据缓冲区地址
+  * @param  ulCount   接收到的字节数
+  * @retval 0-成功 非0-失败
+  */
 static uBit32 I2C_RecvBuff(I2C_BUS_BASE_OPS_TYPE *pBaseOps, I2C_CTRL_PARM *pCtrlParm, 
                                   uBit16 nRegAddr, uBit8 *pBuff, uBit32 ulCount)
 {
@@ -121,12 +134,15 @@ static uBit32 I2C_RecvBuff(I2C_BUS_BASE_OPS_TYPE *pBaseOps, I2C_CTRL_PARM *pCtrl
 }
 
 
-/*----------------------------------------------------------------------------
-对内核函数的封装,增加其校验重发的功能
-其操作的对象是 I2C_Core_SendBuff 和 I2C_Core_RecvBuff
-*----------------------------------------------------------------------------*/
-
-//主机发送函数
+/**
+  * @brief  主机发送
+  * @param  pBaseOps  基本操作接口
+  * @param  pCtrlParm 控制参数接口
+  * @param  nRegAddr  寄存器地址
+  * @param  pBuff     数据缓冲区地址
+  * @param  ulCount   要发送的字节数
+  * @retval 0-成功 非0-失败
+  */
 static uBit32 I2C_MST_SendBuff(I2C_BUS_BASE_OPS_TYPE *pBaseOps, I2C_CTRL_PARM *pCtrlParm, 
                                uBit16 nRegAddr, const uBit8 *pBuff, uBit32 ulCount)
 {
@@ -154,7 +170,15 @@ static uBit32 I2C_MST_SendBuff(I2C_BUS_BASE_OPS_TYPE *pBaseOps, I2C_CTRL_PARM *p
 }
 
 
-//主机接收函数
+/**
+  * @brief  主机接收
+  * @param  pBaseOps  基本操作接口
+  * @param  pCtrlParm 控制参数接口
+  * @param  nRegAddr  寄存器地址
+  * @param  pBuff     数据缓冲区地址
+  * @param  ulCount   接收到的字节数
+  * @retval 0-成功 非0-失败
+  */
 static uBit32 I2C_MST_RecvBuff(I2C_BUS_BASE_OPS_TYPE *pBaseOps, I2C_CTRL_PARM *pCtrlParm, 
                                uBit16 nRegAddr, uBit8 *pBuff, uBit32 ulCount)
 {

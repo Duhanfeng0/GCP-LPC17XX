@@ -108,7 +108,11 @@ typedef union _COM_DATA_ID{
 
 //ulDataType:Bit1-Bit3 操作数据种类----------------------------------
 #define DATA_TYPE_SYS                       (0)     //系统数据
+
+#ifdef CMU_SUPPORT_CRD
 #define DATA_TYPE_CRD                       (1)     //坐标系数据
+#endif
+
 #define DATA_TYPE_AXIS                      (2)     //轴数据
 #define DATA_TYPE_IO                        (3)     //IO数据
 #define DATA_TYPE_ADDA                      (4)     //ADDA数据
@@ -117,10 +121,15 @@ typedef union _COM_DATA_ID{
 #define DATA_TYPE_CUSTOM                    (7)     //自定义指令       // AutoSale
 
 //ulCmdType:Bit4 指令类型---------------------------------------------        
+#ifdef CMU_SUPPORT_PERIO
 #define SETCMD_TYPE_NOMAL                   (0)     //常规设置指令
 #define SETCMD_TYPE_INQ                     (1)     //周期查询设置指令
 #define GETCMD_TYPE_NOMAL                   (0)     //常规获取指令
 #define GETCMD_TYPE_INQ                     (1)     //周期性数据获取指令
+#else
+#define SETCMD_TYPE_NOMAL                   (0)     //常规设置指令
+#define GETCMD_TYPE_NOMAL                   (0)     //常规获取指令
+#endif
 
 //ulCmdIndex:Bit5-Bit10 指令序号--------------------------------------
 /*****************************系统数据操作指令序号**************************/
@@ -154,6 +163,7 @@ typedef union _COM_DATA_ID{
 #define SYS_GETCMD_HQEIPOS                  (10)    //获取高速编码器位置
 #define SYS_GETCMD_HQEISPD                  (11)    //获取高速编码器速度
 /************************************************************************/
+
 
 /*****************************坐标系数据操作指令序号**************************/
 //坐标系常规设置指令
@@ -246,7 +256,6 @@ typedef union _COM_DATA_ID{
 #define MOTOR_SETCMD_AXIS_CMD_POS           (25)
 #define MOTOR_SETCMD_AXIS_QEI_POS           (26)
 #define MOTOR_SETCMD_AXIS_ENABLE            (27)
-
 
 //轴(电机)常规获取指令
 #define MOTOR_GETCMD_CTRL_PARM              (1)     //电机所有控制参数

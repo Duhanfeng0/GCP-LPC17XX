@@ -229,7 +229,6 @@ void I2C_BaseOpsInterfaceExport(I2C_BUS_BASE_OPS_TYPE *pBaseOpsInterface)
     pBaseOpsInterface->pf_I2C_SendAckOrNack = I2C_Base_SendAckOrNack;
     pBaseOpsInterface->pf_I2C_SendByte      = I2C_Base_SendByte;
     pBaseOpsInterface->pf_I2C_RecvByte      = I2C_Base_RecvByte;
-                           
     
 }
 

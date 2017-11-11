@@ -6,11 +6,6 @@
 #include "..\\UIN_GlobalDataDef.h"
 
 
-
-#ifdef RS_MONITOR_ENALBE        
-extern CMU_RS_MS_DATA g_sCmuRsMonitorData;
-#endif
-
 extern RCV_TIME_OUT_CTRL_DATA m_sRcvTimeOutCtrlData;
 
 #ifdef __cplusplus

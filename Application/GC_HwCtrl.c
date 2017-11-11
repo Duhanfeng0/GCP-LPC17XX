@@ -26,6 +26,7 @@
 #include "../SysPeripheral/KEY/KEY.h"
 #include "../SysPeripheral/SysTick/SysTimer.h"
 #include "../SysPeripheral/SysCtrl/SysCtrl.h"
+#include "../SysPeripheral/UART/UART.h"
 
 #include "../PeriDrivers/NixieTube/NixieTube.h"
 #include "../PeriDrivers/Eeprom/Eeprom.h"
@@ -83,6 +84,9 @@ void GC_HwInit(void)
 {
     //初始化IO
     GC_IOConfig();
+    
+    //初始化串口
+    UART_Init(0, 115200);
     
     //初始化蜂鸣器
     GPIO_MAN_SetOutputPinLogicToggle(GC_OUTPUT_IO_BUZZER, 1);//设置蜂鸣器逻辑翻转,false为关闭,true为开启
@@ -145,7 +149,7 @@ void GC_KeyProc(void)
             GC_SYS_PARM *pSysParm = GC_GetSysParmAddr();
             
             //柜号自增
-            pSysParm->ulCabNumber++;
+            pSysParm->ulCabNumber = (pSysParm->ulCabNumber + 1) & 0x0F;
             
             //存储参数
             GC_StoreSysParm();

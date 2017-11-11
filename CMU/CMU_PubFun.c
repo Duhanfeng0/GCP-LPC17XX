@@ -3,16 +3,18 @@
 #include "CMU_Interface.h"
 #include "CMU_ErrorCodeDef.h"
 #include ".\\ProtocolLayer\\CMU_ExApi.h"
-#include ".\\ProtocolLayer\\CMU_PeriodDataMana.h"
 #include ".\\ProtocolLayer\\CMU_SendDataProcess.h"
 #include ".\\ProtocolLayer\\CMU_RcvDataProcess.h"
 #include ".\\AbstractionLayer\\AbstractionLayer.h"
 
 
-static uBit8 m_uComSetDelayCycles = 0;
+#ifdef CMU_SUPPORT_PERIO
+#include ".\\ProtocolLayer\\CMU_PeriodDataMana.h"
+#endif
 
-static uBit32 m_ulCmuMemBase = 0;                    //当前可用缓冲区基地址
-static uBit32 m_ulCmuMemRestLen = 0;                //当前可用缓冲区剩余长度
+
+static uBit32 m_ulCmuMemBase = 0;           //当前可用缓冲区基地址
+static uBit32 m_ulCmuMemRestLen = 0;        //当前可用缓冲区剩余长度
 
 /*
 函数名称：uBit32 CMU_SetRSBufAddr(uBit32 ulStartAddr, uBit32 ulLen);
@@ -93,27 +95,34 @@ void* CMU_Malloc(uBit32 ulSize)
 uBit32 CMU_Init(uBit8 uComType)                                
 {
     uBit32 ulRet=0;
+    
+#ifdef CMU_SUPPORT_PERIO
+    
     //周期性数据处理初始化
     CMU_PeriodDataManaInit();
-
+    
+#endif
+    
+    
+    
     //绑定初始化处理函数
     CMU_InitExApi();
-
+    
     //接收数据区初始化
     ulRet = CMU_InitRecCtrlData();
     if (ulRet)
         return ulRet;
-
+    
     //发送数据区初始化
     ulRet = CMU_ResetSendCtrlData(0,NULL,0);
-
+    
     if (ulRet)
         return ulRet;
-
+    
     //打开通信连接
     if (COM_AL_Open(uComType))
         return CMU_ERR_CONNECT;
-
+    
     return CMU_ERR_SUCCESS;
 }
 
@@ -131,55 +140,57 @@ uBit32 CMU_Init(uBit8 uComType)
 */
 uBit32 CMU_MainProc()                            
 {
-    uBit32 ulRet;
-
-     //切换通信方式
+    uBit32 ulRet = 0;
+    
+#if 0
+    //切换通信方式
     if (m_uComSetDelayCycles!=0)
     {
         m_uComSetDelayCycles--;
-
+        
         if (m_uComSetDelayCycles==0)
         {
             //切换通信方式
-            //uBit32 ulComType, ulNode;
-            //BOOT_GetComType(&ulComType, &ulNode);
-            //CMU_Init(ulComType);
             CMU_Init(COM_TYPE_ENET);
         }
     }    
+#endif
     
     //底层硬件接收数据
-#ifdef SYS_FUN_TEST
-    GPIO_FunTestStart(CMU_CMU_MainProc);
-#endif
-
     COM_AL_RcvHandle(); 
-
+    
     if (!CMU_IsSendFinished())  
-    {    //上次发送未完成,则继续发送未发送完成的数据
-        if(CMU_MainSendProc() != CMU_ERR_SUCCESS)//发送失败（硬件发送失败后）
+    {
+        ulRet = CMU_MainSendProc();
+        
+#ifdef CMU_SUPPORT_PERIO
+        //上次发送未完成,则继续发送未发送完成的数据
+        if(ulRet != CMU_ERR_SUCCESS)//发送失败（硬件发送失败后）
+        {
             CMU_PeriodSendSwitch(false);
+        }
         else
+        {
             CMU_PeriodSendSwitch(true);
+        }
+#endif
     }
-
+    
     //数据接收处理
     ulRet = CMU_MainRcvProc();     
-
+    
     if (ulRet)
         return ulRet;
-
+    
+#ifdef CMU_SUPPORT_PERIO
     if(CMU_IsSendFinished())   
-    {//没有发送数据，则发送错误和处理周期性数据发送
+    {
+        //没有发送数据，则发送错误和处理周期性数据发送
         CMU_ReportErrorProc();
         ulRet = CMU_MainPeriodInqProc();
     }
-
-
-#ifdef SYS_FUN_TEST
-    GPIO_FunTestEnd(CMU_CMU_MainProc);
 #endif
-
+    
     return ulRet;
 }
 
@@ -206,7 +217,7 @@ uBit32 CMU_GetComType(void)
 */
 uBit32 CMU_SetComType(uBit32 ulComType)
 {
-#ifndef WIN32_VER
+
     //设置bootloader通信方式
     if (ulComType==COM_TYPE_CAN)
     {
@@ -217,9 +228,7 @@ uBit32 CMU_SetComType(uBit32 ulComType)
         //BOOT_SetComType(BOOT_COM_ENET, 0);
     }
 
-    m_uComSetDelayCycles=10;
-
-#endif
+    //m_uComSetDelayCycles=10;
 
     return 0;
 }

@@ -15,6 +15,7 @@
 //#include "..\\GPIO\\GPIOCtrl.h"
 
 
+#ifdef CMU_SUPPORT_CRD
 
 #define MAX_INQ_RECORD_COUNT            (32)    //最大允许周期性查询的个数
 #define MIN_CONTINUE_CYCLE_GAP            (10)    //两周期性查询间最小循环间隔
@@ -561,23 +562,27 @@ uBit32 CMU_SendPeriodDataProc(COM_DATA_ID ulID)
 
     switch(ulID.ulComDataID.ulDataType)
     {
-        case DATA_TYPE_SYS:                                //系统数据
-                ulRet = INQ_SendSysPeriodDataProc(ulID);
-                break;
-        case DATA_TYPE_CRD:                                //坐标系数据
-                ulRet = INQ_SendCrdPeriodDataProc(ulID);    
-                break;
-        case DATA_TYPE_AXIS:                            //轴数据
-                ulRet = INQ_SendAxisPeriodDataProc(ulID);    
-                break;
-        case DATA_TYPE_IO:                                //IO数据
-                ulRet = INQ_SendIoPeriodDataProc(ulID);    
-                break;
-        case DATA_TYPE_ADDA:                            //ADDA数据
-                ulRet = INQ_SendADDAPeriodDataProc(ulID);    
-                break;
-        default:
-                break;
+    case DATA_TYPE_SYS:                                //系统数据
+        ulRet = INQ_SendSysPeriodDataProc(ulID);
+        break;
+        
+#ifdef CMU_SUPPORT_CRD
+    case DATA_TYPE_CRD:                                //坐标系数据
+        ulRet = INQ_SendCrdPeriodDataProc(ulID);    
+        break;
+#endif
+        
+    case DATA_TYPE_AXIS:                            //轴数据
+        ulRet = INQ_SendAxisPeriodDataProc(ulID);    
+        break;
+    case DATA_TYPE_IO:                                //IO数据
+        ulRet = INQ_SendIoPeriodDataProc(ulID);    
+        break;
+    case DATA_TYPE_ADDA:                            //ADDA数据
+        ulRet = INQ_SendADDAPeriodDataProc(ulID);    
+        break;
+    default:
+        break;
     }
 
     return ulRet;
@@ -642,9 +647,6 @@ uBit32 CMU_MainPeriodInqProc()
         m_ucCurRecordIndex = 0;
 
     //当前记录查询时间到
-#ifdef SYS_FUN_TEST
-    GPIO_FunTestStart(CMU_CMU_MainPeriodInqProc);
-#endif
     if (CMU_IsInqTimeUp()==1)
     {
         ulId.ulFrameID = m_sInqRecordBuf[m_ucCurRecordIndex].ulInqId;
@@ -658,9 +660,6 @@ uBit32 CMU_MainPeriodInqProc()
         ulRet = CMU_SendPeriodDataProc(ulId);
     }
 
-#ifdef SYS_FUN_TEST
-    GPIO_FunTestEnd(CMU_CMU_MainPeriodInqProc);
-#endif
     return ulRet;
 }
 
@@ -682,3 +681,5 @@ void CMU_ReportErrorProc()
         CMU_SendResponsePack(ulID.ulFrameID, ulError);
     }
 }
+
+#endif

@@ -81,7 +81,9 @@ typedef struct _cmu_external_fun_table
     //--------------------------------------------参数管理模块------------------------------------------------
     uBit32 (*pf_SPM_SetSysCtrlParm)(SYS_CTRL_PARM* pSysCtrlParm);
     uBit32 (*pf_SPM_SetCrdSysAxisMapTable)(CRDSYS_AXIS_MAP_TABLE* pCrdAxisMapTable, Bit32 iCrdSysCount);
+#ifdef CMU_SUPPORT_CRD
     uBit32 (*pf_SPM_SetCrdParm)(Bit32 iCrdSysIndex,  CRDSYS_PARM* pCrdParm);
+#endif
     uBit32 (*pf_SPM_SetAxisParm)(Bit32 iAxisNO, AXIS_PARM* pAxisParm);//设置电机控制参数        
     uBit32 (*pf_SPM_SetAxisPitchCmpParm)(Bit32 iAxisNO, AXIS_PITCH_CMP_PARM* pPitchParm);//设置电机螺距补偿        
     uBit32 (*pf_SPM_SetLookaheadEnable)(Bit32 iCrdSysIndex, Bit32 iEnable);
@@ -91,7 +93,7 @@ typedef struct _cmu_external_fun_table
     const AXIS_PARM* (*pf_SPM_GetAxisParmAddr)(void);
     const AXIS_PITCH_CMP_PARM* (*pf_SPM_GetAxisPitchCmpParmAddr)(void);
     uBit32 (*pf_SPM_SaveParm)(void);                                //保存控制参数
-    uBit32 (*pf_SPM_SaveConfig)(void);                                //保存配置信息
+    uBit32 (*pf_SPM_SaveConfig)(void);                              //保存配置信息
     
     //--------------------------------------------设备管理模块------------------------------------------------
     
@@ -124,6 +126,14 @@ typedef struct _cmu_external_fun_table
     uBit32 (*pf_IO_SetOutPutPWMFreq)(uBit32 ulIONO, Bit32 iIOBitNO, Bit32 iFreq);            //设置输出口PWM频率
     uBit32 (*pf_ADDA_SetDAStatus)(uBit32 ulADDANO, uBit32 iDAChNO, uBit32 iDAVaule);//设置DA板DA输出
     
+    
+    uBit32 (*pf_CSM_GetVersion)(SOFTWARE_VERSION* pVersion);
+    uBit32 (*pf_CSM_SetMotorPosCtrlMotion)(Bit32 iMotorNO, POSCTRL_MOTION_DATA* pPosCtrlMotion);//设置位置控制运动数据    
+    uBit32 (*pf_CSM_SetMotorSpeedCtrlMotion)(Bit32 iMotorNO, SPEEDCTRL_MOTION_DATA* pSpeedCtrlMotion);//设置速度控制运动数据                        
+    uBit32 (*pf_CSM_SetMotorJogStop)(Bit32 iMotorNO);//电机停止    
+    uBit32 (*pf_CSM_MotorJogEStop)(Bit32 iMotorNO);  //电机急停
+    
+    #ifdef CMU_SUPPORT_CRD
     //--------------------------------------------通道管理模块------------------------------------------------
     
     uBit32 (*pf_LAX_Home)(Bit32 iCrdSysIndex, Bit32 iAxisIndex, Bit32 iHomeFlag, Bit32 iWaitExeResult);//轴回零                        
@@ -132,7 +142,7 @@ typedef struct _cmu_external_fun_table
     uBit32 (*pf_LAX_Enable)(Bit32 iCrdSysIndex, Bit32 iAxisIndex, Bit32 iEnable, Bit32 iWaitExeResult);
     uBit32 (*pf_LAX_CheckLastCmdExeState)(Bit32 iCrdSysIndex, Bit32 iAxisIndex, uBit32* pCmdType, uBit32 *pExeRes);    //获取上次执行结果
     
-    uBit32 (*pf_CSM_GetVersion)(SOFTWARE_VERSION* pVersion);
+    
     
     uBit32 (*pf_CSM_Reset)(Bit32 iCrdSysIndex);
     uBit32 (*pf_CSM_SetCtrlMode)(Bit32 iCrdSysIndex, uBit32 ulMode);
@@ -154,10 +164,7 @@ typedef struct _cmu_external_fun_table
     
     const CRDSYS_STATE_DATA* (*pf_CSM_GetCrdSysStateReadAddr)(Bit32 iCrdSysIndex);
     
-    uBit32 (*pf_CSM_SetMotorPosCtrlMotion)(Bit32 iMotorNO, POSCTRL_MOTION_DATA* pPosCtrlMotion);//设置位置控制运动数据    
-    uBit32 (*pf_CSM_SetMotorSpeedCtrlMotion)(Bit32 iMotorNO, SPEEDCTRL_MOTION_DATA* pSpeedCtrlMotion);//设置速度控制运动数据                        
-    uBit32 (*pf_CSM_SetMotorJogStop)(Bit32 iMotorNO);//电机停止    
-    uBit32 (*pf_CSM_MotorJogEStop)(Bit32 iMotorNO);  //电机急停
+    
     uBit32 (*pf_CSM_SetAxisPosCtrlMotion)(Bit32 iCrdSysIndex, uBit32 ulAxisMask, POSCTRL_MOTION_DATA* pPosCtrlMotion);    
     uBit32 (*pf_CSM_SetAxisSpeedCtrlMotion)(Bit32 iCrdSysIndex, uBit32 ulAxisMask, SPEEDCTRL_MOTION_DATA* pSpeedCtrlMotion);        
     uBit32 (*pf_CSM_SetAxisJogStop)(Bit32 iCrdSysIndex, uBit32 ulAxisMask);//轴停止            
@@ -274,6 +281,8 @@ typedef struct _cmu_external_fun_table
     
     //取当前程编位置（工件坐标系值）, 返回轴屏蔽字
     Bit32 (*pf_IPR_GetProgPos)(uBit32 ulCh, Bit32 *pPos);
+    #endif
+
     
     
     //--------------------------------------------寄存器模块------------------------------------------------
@@ -285,6 +294,7 @@ typedef struct _cmu_external_fun_table
     uBit32 (*pf_ECM_GetErrorCode)(uBit32 *pulErrorCode);
 }CMU_EXTERNAL_FUN_TEBLE;
 
+#ifdef CMU_SUPPORT_CRD
 typedef struct _ipr_out_api
 {
     //启动(挂起)所有解释线程，获取(释放)10M用户缓冲区控制权限，下载G代码前先检查使能状态，只有使能状态下才运行下载G代码程序
@@ -368,5 +378,7 @@ typedef struct _ipr_out_api
     //获取通道当前基准刀具号
     Bit32 (*pf_IPR_GetBaseToolNo)(uBit32 ulCh, Bit32 *pToolNo);
 }ipr_out_api;
+#endif
+
 #endif
 

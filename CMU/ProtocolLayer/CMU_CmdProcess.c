@@ -14,17 +14,8 @@
 
 #include "..\\CMU_ErrorCodeDef.h"
 
-
 #include "..\\UIN_GlobalDataDef.h"
 #include "..\\AbstractionLayer\\AbstractionLayer.h"
-
-
-
-//#define DISABLE_IPR_INTERFACE //解释器接口暂时注释掉Alan???
-
-#ifdef RS_MONITOR_ENALBE        
-CMU_RS_MS_DATA g_sCmuRsMonitorData;
-#endif
 
 
 
@@ -155,12 +146,6 @@ uBit32 Sys_SetNomalCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
         }
         break;
     case SYS_SETCMD_IPR_ENABLE://使能或禁止解释器
-        {//解释器接口暂时注释掉Alan???
-            //if (m_sExternalFunTable.pf_SYS_IPREnable(*(uBit32*)pRcvCtrlData->pRevBuf)==0)//使能成功
-            //    ulRet = CMU_ERR_SUCCESS;
-            //else
-            //    ulRet = CMU_ERR_IPR_ERROR;
-        }
         break;
     case SYS_SETCMD_DEV_SCAN://系统扫描
         ulRet = m_sExternalFunTable.pf_DEV_Scan();
@@ -205,10 +190,6 @@ uBit32 Sys_GetNomalCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
     uBit8* pSendBuf;
     const SYS_CTRL_PARM *pSysCtrlParm;
     uBit32 ulRet = CMU_ERR_INVALID_CMD;
-    
-#ifdef RS_MONITOR_ENALBE   
-    CTRL_RS_MS_DATA *pRsMsData; 
-#endif
 
     CMU_ResetSendCtrlData(pRcvCtrlData->ulRevID.ulFrameID, NULL, 0);
     pSendBuf = CMU_GetSendBufAddr();
@@ -293,19 +274,6 @@ uBit32 Sys_GetNomalCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
             CMU_ResetSendCtrlData(pRcvCtrlData->ulRevID.ulFrameID, (uBit8*)pSysCtrlParm, sizeof(SYS_CTRL_PARM));            
             break;
         }
-#ifdef RS_MONITOR_ENALBE        
-    case SYS_GETCMD_CTRL_RS_MS_DATA:                        //获取CMU模块通信监测数据
-        {
-
-            ulRet = CMU_ERR_SUCCESS;
-            pRsMsData = (CTRL_RS_MS_DATA*)pSendBuf;
-
-            pRsMsData->sCmuRsMsData = g_sCmuRsMonitorData;
-            m_sExternalFunTable.pf_DEV_GetBusRsMsData(DEV_BUS_TYPE_CAN, &pRsMsData->sCanRsMsData);
-            CMU_AddToSendCtrlData(NULL,sizeof(CTRL_RS_MS_DATA));
-            break;
-        }
-#endif
     case SYS_GETCMD_CSM_VER:                        //获取CSM版本
         {
             ulRet = m_sExternalFunTable.pf_CSM_GetVersion((SOFTWARE_VERSION*)pSendBuf);
@@ -355,7 +323,7 @@ uBit32 Sys_GetNomalCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 uBit32 Sys_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 {
     uBit32 ulRet = CMU_ERR_INVALID_CMD;
-
+    
     if (pRcvCtrlData->ulRevID.ulComDataID.ulOperType==DATA_OPRE_TYPE_SET)//设置数据
     {
         switch(pRcvCtrlData->ulRevID.ulComDataID.ulCmdType)
@@ -363,16 +331,18 @@ uBit32 Sys_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
         case SETCMD_TYPE_NOMAL:    //常规设置指令
             ulRet = Sys_SetNomalCmdProcess(pRcvCtrlData);
             break;
+#ifdef CMU_SUPPORT_PERIO
         case SETCMD_TYPE_INQ:    //周期性设置指令
             ulRet = CMU_AddInqRecord(pRcvCtrlData->ulRevID, *(uBit32*)pRcvCtrlData->pRevBuf);
             break;
+#endif
         default:break;
         }
-
+        
         if (ulRet==CMU_ERR_SUCCESS)//
         {
             if(pRcvCtrlData->ulWaitResultCode==0) //无需等待处理结果
-                  CMU_SendResponsePack(pRcvCtrlData->ulRevID.ulFrameID, CMU_ERR_SUCCESS);
+                CMU_SendResponsePack(pRcvCtrlData->ulRevID.ulFrameID, CMU_ERR_SUCCESS);
         }
     }else//获取数据
     {
@@ -381,16 +351,20 @@ uBit32 Sys_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
         case GETCMD_TYPE_NOMAL:    //获取常规数据
             ulRet = Sys_GetNomalCmdProcess(pRcvCtrlData);
             break;
+#ifdef CMU_SUPPORT_PERIO
         case GETCMD_TYPE_INQ:            //获取周期性状态数据
             ulRet = CMU_SendPeriodDataProc(pRcvCtrlData->ulRevID);
             break;
+#endif
         default:break;
         }
     }
-
+    
     return ulRet;
 }
 //---------------------------------------------------------------------------
+
+#ifdef CMU_SUPPORT_CRD
 
 //坐标系指令处理接口----------------------------------------------------------
 uBit32 RapidCmdTranslate(COM_RCV_CTRL_DATA *pRcvCtrlData)
@@ -1247,39 +1221,47 @@ uBit32 Crd_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
     {
         switch(pRcvCtrlData->ulRevID.ulComDataID.ulCmdType)
         {
-            case SETCMD_TYPE_NOMAL://常规设置指令
-                    ulRet = Crd_NomalSetCmdProcess(pRcvCtrlData);
-                    break;
-            case SETCMD_TYPE_INQ://周期性设置指令
-                    ulRet = CMU_AddInqRecord(pRcvCtrlData->ulRevID, *(uBit32*)pRcvCtrlData->pRevBuf);
-                    break;
-            default:
-                    break;
+        case SETCMD_TYPE_NOMAL://常规设置指令
+            ulRet = Crd_NomalSetCmdProcess(pRcvCtrlData);
+            break;
+#ifdef CMU_SUPPORT_PERIO     
+        case SETCMD_TYPE_INQ://周期性设置指令
+            ulRet = CMU_AddInqRecord(pRcvCtrlData->ulRevID, *(uBit32*)pRcvCtrlData->pRevBuf);
+            break;
+#endif
+        default:
+            break;
         }
 
         if (ulRet==CMU_ERR_SUCCESS)
         {
             if(pRcvCtrlData->ulWaitResultCode==0) //无需等待处理结果
+            {
                 CMU_SendResponsePack(pRcvCtrlData->ulRevID.ulFrameID, CMU_ERR_SUCCESS);
+            }
         }
     }
     else//获取数据
         {
             switch(pRcvCtrlData->ulRevID.ulComDataID.ulCmdType)
             {
-                case GETCMD_TYPE_NOMAL://获取常规数据
-                        ulRet = Crd_NomalGetCmdProcess(pRcvCtrlData);
-                        break;
-                case GETCMD_TYPE_INQ:        //获取周期性状态数据
-                        ulRet = CMU_SendPeriodDataProc(pRcvCtrlData->ulRevID);
-                        break;
-                default:
-                        break;
+            case GETCMD_TYPE_NOMAL://获取常规数据
+                ulRet = Crd_NomalGetCmdProcess(pRcvCtrlData);
+                break;
+#ifdef CMU_SUPPORT_PERIO     
+            case GETCMD_TYPE_INQ:        //获取周期性状态数据
+                ulRet = CMU_SendPeriodDataProc(pRcvCtrlData->ulRevID);
+                break;
+#endif
+            default:
+                break;
             }
         }
 
     return ulRet;
 }
+
+#endif
 //------------------------------------------------------------------------------------
 
 
@@ -1372,10 +1354,11 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 {
     uBit32 ulRet=CMU_ERR_INVALID_CMD;
     uBit32 ulMotorNo = pRcvCtrlData->ulRevID.ulComDataID.ulDevNo;
+#ifdef CMU_SUPPORT_CRD
     uBit32 ulCrdIndex = pRcvCtrlData->ulRevID.ulComDataID.ulCrdNo;
     uBit32 ulAxisMask = ulMotorNo;
     uBit32 ulAxisIndex = ulMotorNo;
-
+#endif
     switch(pRcvCtrlData->ulRevID.ulComDataID.ulCmdIndex)
     {
     case MOTOR_SETCMD_CTRL_PARM:                    //设置电机控制参数
@@ -1406,7 +1389,6 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
     case MOTOR_SETCMD_HOME:                        //电机回零
         {
             ulRet = m_sExternalFunTable.pf_PAX_Home(ulMotorNo, *(BooLean*)pRcvCtrlData->pRevBuf, 0);
-#ifndef WIN32_VER
             //MIII总线的回零指令回应需要至少4-6个通信周期
             if (ulRet==CMU_ERR_SUCCESS)
             {
@@ -1417,7 +1399,6 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
                 pRcvCtrlData->uDevNo = ulMotorNo;
                 pRcvCtrlData->dStartTick = m_sExternalFunTable.pf_SYS_GetSysTickCount();
             }
-#endif
             break;
         }
     case MOTOR_SETCMD_STOP:                        //电机停止
@@ -1437,9 +1418,9 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
         }
     case MOTOR_SETCMD_QEI_POS:                    //设置电机编码器当前位置
         {
-
+            
             ulRet = m_sExternalFunTable.pf_PAX_SetQeiPos(ulMotorNo, *(Bit32*)pRcvCtrlData->pRevBuf, 0);
-#ifndef WIN32_VER
+            
             //MIII总线的位置设置指令回应需要至少4-6个通信周期
             if (ulRet==CMU_ERR_SUCCESS)
             {
@@ -1450,14 +1431,13 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
                 pRcvCtrlData->uDevNo = ulMotorNo;
                 pRcvCtrlData->dStartTick = m_sExternalFunTable.pf_SYS_GetSysTickCount();
             }
-#endif
             break;
         }
     case MOTOR_SETCMD_ENABLE:                        //设置伺服使能0-断使能1-加使能
         {
-
+            
             ulRet = m_sExternalFunTable.pf_PAX_Enable(ulMotorNo, *(Bit32*)pRcvCtrlData->pRevBuf, 0);
-#ifndef WIN32_VER
+            
             //MIII总线的伺服使能回应需要至少4-42个通信周期
             if (ulRet==CMU_ERR_SUCCESS)
             {
@@ -1468,7 +1448,6 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
                 pRcvCtrlData->uDevNo = ulMotorNo;
                 pRcvCtrlData->dStartTick = m_sExternalFunTable.pf_SYS_GetSysTickCount();
             }
-#endif
             break;
         }
     case MOTOR_SETCMD_RESET:                        //电机复位
@@ -1481,6 +1460,9 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
             ulRet = m_sExternalFunTable.pf_PAX_SendSvParm(ulMotorNo, pRcvCtrlData->pRevBuf);
             break;
         }
+        
+        
+#ifdef CMU_SUPPORT_CRD
     case MOTOR_SETCMD_AXIS_POS_MOTION:  //设置轴位置模式运动 
         {
             ulRet = m_sExternalFunTable.pf_CSM_SetAxisPosCtrlMotion(ulCrdIndex, ulAxisMask, (POSCTRL_MOTION_DATA*)pRcvCtrlData->pRevBuf);
@@ -1494,7 +1476,7 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
     case MOTOR_SETCMD_AXIS_HOME:
         {
             ulRet = m_sExternalFunTable.pf_LAX_Home(ulCrdIndex, ulAxisIndex, *(Bit32*)pRcvCtrlData->pRevBuf, 0);
-#ifndef WIN32_VER
+            
             //MIII总线的回零回应需要至少4-6个通信周期
             if (ulRet==CMU_ERR_SUCCESS)
             {
@@ -1506,7 +1488,6 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
                 pRcvCtrlData->uCrdNo = ulCrdIndex;
                 pRcvCtrlData->dStartTick = m_sExternalFunTable.pf_SYS_GetSysTickCount();
             }
-#endif
             break;
         }
     case MOTOR_SETCMD_AXIS_STOP:
@@ -1527,8 +1508,7 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
     case MOTOR_SETCMD_AXIS_QEI_POS:        
         {
             ulRet = m_sExternalFunTable.pf_LAX_SetQeiPos(ulCrdIndex, ulAxisIndex, *(Bit32*)pRcvCtrlData->pRevBuf,0);
-
-#ifndef WIN32_VER
+            
             //MIII总线的位置设置指令回应需要至少4-6个通信周期
             if (ulRet==CMU_ERR_SUCCESS)
             {
@@ -1540,14 +1520,12 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
                 pRcvCtrlData->uCrdNo = ulCrdIndex;
                 pRcvCtrlData->dStartTick = m_sExternalFunTable.pf_SYS_GetSysTickCount();
             }
-#endif
             break;
         }
     case MOTOR_SETCMD_AXIS_ENABLE:
         {
             ulRet = m_sExternalFunTable.pf_LAX_Enable(ulCrdIndex, ulAxisIndex, *(BooLean*)pRcvCtrlData->pRevBuf,0);
-
-#ifndef WIN32_VER
+            
             //MIII总线的伺服使能回应需要至少4-42个通信周期
             if (ulRet==CMU_ERR_SUCCESS)
             {
@@ -1559,9 +1537,9 @@ uBit32 Motor_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
                 pRcvCtrlData->uCrdNo = ulCrdIndex;
                 pRcvCtrlData->dStartTick = m_sExternalFunTable.pf_SYS_GetSysTickCount();
             }
-#endif
             break;
         }
+#endif
     default:break;
     }
 
@@ -1666,7 +1644,7 @@ uBit32 Motor_NomalGetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 uBit32 Motor_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 {
     uBit32 ulRet = CMU_ERR_INVALID_CMD;
-
+    
     if (pRcvCtrlData->ulRevID.ulComDataID.ulOperType==DATA_OPRE_TYPE_SET)//设置数据
     {
         switch(pRcvCtrlData->ulRevID.ulComDataID.ulCmdType)
@@ -1674,31 +1652,38 @@ uBit32 Motor_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
         case SETCMD_TYPE_NOMAL://常规设置指令
             ulRet = Motor_NomalSetCmdProcess(pRcvCtrlData);
             break;
+#ifdef CMU_SUPPORT_PERIO
         case SETCMD_TYPE_INQ://周期性设置指令
             ulRet = CMU_AddInqRecord(pRcvCtrlData->ulRevID, *(uBit32*)pRcvCtrlData->pRevBuf);
             break;
+#endif
         default:break;
         }
-
+        
         if (ulRet==CMU_ERR_SUCCESS)//
         {
             if(pRcvCtrlData->ulWaitResultCode==0) //无需等待处理结果
+            {
                 CMU_SendResponsePack(pRcvCtrlData->ulRevID.ulFrameID, CMU_ERR_SUCCESS);
+            }
         }
-    }else//获取数据
+    }
+    else//获取数据
     {
         switch(pRcvCtrlData->ulRevID.ulComDataID.ulCmdType)
         {
         case GETCMD_TYPE_NOMAL://获取常规数据
             ulRet = Motor_NomalGetCmdProcess(pRcvCtrlData);
             break;
+#ifdef CMU_SUPPORT_PERIO
         case GETCMD_TYPE_INQ:            //获取周期性状态数据
             ulRet = CMU_SendPeriodDataProc(pRcvCtrlData->ulRevID);
             break;
+#endif
         default:break;
         }
     }
-
+    
     return ulRet;
 }
 
@@ -1730,9 +1715,6 @@ uBit32 Io_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
     {
     case IO_SETCMD_STATE:                    //设置IO板输出状态
         {
-#ifdef RS_MONITOR_ENALBE
-            g_sCmuRsMonitorData.ulOutputSetCount++;
-#endif
             ulRet = m_sExternalFunTable.pf_IO_SetOutputStatus(ulIoNo, ulData, ulBitMask);
             break;
         }
@@ -1823,7 +1805,7 @@ uBit32 Io_NomalGetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 uBit32 Io_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 {
     uBit32 ulRet = CMU_ERR_INVALID_CMD;
-
+    
     if (pRcvCtrlData->ulRevID.ulComDataID.ulOperType==DATA_OPRE_TYPE_SET)//设置数据
     {
         switch(pRcvCtrlData->ulRevID.ulComDataID.ulCmdType)
@@ -1831,12 +1813,14 @@ uBit32 Io_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
         case SETCMD_TYPE_NOMAL:    //常规设置指令
             ulRet = Io_NomalSetCmdProcess(pRcvCtrlData);
             break;
+#ifdef CMU_SUPPORT_PERIO
         case SETCMD_TYPE_INQ:    //周期性设置指令
             ulRet = CMU_AddInqRecord(pRcvCtrlData->ulRevID, *(uBit32*)pRcvCtrlData->pRevBuf);
             break;
+#endif
         default:break;
         }
-
+        
         if (ulRet==CMU_ERR_SUCCESS)//
         {
             if(pRcvCtrlData->ulWaitResultCode==0) //无需等待处理结果
@@ -1849,13 +1833,15 @@ uBit32 Io_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
         case GETCMD_TYPE_NOMAL://获取常规数据
             ulRet = Io_NomalGetCmdProcess(pRcvCtrlData);
             break;
+#ifdef CMU_SUPPORT_PERIO
         case GETCMD_TYPE_INQ:        //获取周期性状态数据
             ulRet = CMU_SendPeriodDataProc(pRcvCtrlData->ulRevID);
             break;
+#endif
         default:break;
         }
     }
-
+    
     return ulRet;
 }
 
@@ -1963,43 +1949,45 @@ uBit32 Adda_NomalGetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 uBit32 Adda_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 {
     uBit32 ulRet = CMU_ERR_INVALID_CMD;
-
+    
     if (pRcvCtrlData->ulRevID.ulADDADataID.ulOperType==DATA_OPRE_TYPE_SET)//设置数据
     {
         switch(pRcvCtrlData->ulRevID.ulADDADataID.ulCmdType)
         {
         case SETCMD_TYPE_NOMAL://常规设置指令，ulChMask表示DA通道编号
-            {
                 ulRet = Adda_NomalSetCmdProcess(pRcvCtrlData);
                 break;
-            }
+#ifdef CMU_SUPPORT_PERIO
         case SETCMD_TYPE_INQ://周期性设置指令
-            {
                 ulRet = CMU_AddInqRecord(pRcvCtrlData->ulRevID, *(uBit32*)pRcvCtrlData->pRevBuf);
                 break;
-            }
+#endif
+            
         default:break;
         }
-
+        
         if (ulRet==CMU_ERR_SUCCESS)//
         {
             if(pRcvCtrlData->ulWaitResultCode==0) //无需等待处理结果
                 CMU_SendResponsePack(pRcvCtrlData->ulRevID.ulFrameID, CMU_ERR_SUCCESS);
         }
-    }else//获取周期性状态数据
+    }
+    else//获取指令
     {
         switch(pRcvCtrlData->ulRevID.ulADDADataID.ulCmdType)
         {
         case GETCMD_TYPE_NOMAL:
             ulRet = Adda_NomalGetCmdProcess(pRcvCtrlData);
             break;
+#ifdef CMU_SUPPORT_PERIO
         case GETCMD_TYPE_INQ:
             ulRet = CMU_SendPeriodDataProc(pRcvCtrlData->ulRevID);
             break;
+#endif
         default:break;
         }
     }
-
+    
     return ulRet;
 }
 
@@ -2092,9 +2080,13 @@ uBit32 CMU_CmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
     case DATA_TYPE_SYS:
         ulRet = Sys_CmdProcess(pRcvCtrlData);
         break;
+        
+#ifdef CMU_SUPPORT_CRD
     case DATA_TYPE_CRD:
         ulRet = Crd_CmdProcess(pRcvCtrlData);
         break;
+#endif
+        
     case DATA_TYPE_AXIS:
         ulRet = Motor_CmdProcess(pRcvCtrlData);
         break;
