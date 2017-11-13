@@ -1,6 +1,7 @@
 #ifndef __GC_HARDWARE_DEF_H
 #define __GC_HARDWARE_DEF_H
 
+
 /*****************************************************************************
  * 系统硬件资源参数
  ****************************************************************************/
@@ -19,5 +20,8 @@
 #define GC_LOCK_DEF_PWR_ON_TIME         ( 250)  //门锁打开保持时间(ms)
 #define GC_LOCK_ROW_OPEN_STATE          (false) //门锁行信号有效电平
 #define GC_LOCK_COL_OPEN_STATE          (true)  //门锁列信号有效电平
+
+//入书检测器
+#define GC_INBOOK_DETECTOR_EXTI_SOURCE  (IRQ_TRG_GPIOINT0_18)
 
 #endif /* __GC_HARDWARE_DEF_H */

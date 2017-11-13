@@ -103,8 +103,8 @@ typedef union _COM_DATA_ID{
 #define SAME_TYPE_PACK_MASK                 (0X007FFFFF)//同类型数据包屏蔽字，BIT0-BIT22(该字段是固定不变数据，可确定唯一数据)
 
 //ulOperType:Bit0 数据操作类型定义----------------------------------
-#define DATA_OPRE_TYPE_SET                  (0)
-#define DATA_OPRE_TYPE_GET                  (1)
+#define DATA_OPRE_TYPE_SET                  (0)     //设置指令
+#define DATA_OPRE_TYPE_GET                  (1)     //查询指令
 
 //ulDataType:Bit1-Bit3 操作数据种类----------------------------------
 #define DATA_TYPE_SYS                       (0)     //系统数据
@@ -164,7 +164,7 @@ typedef union _COM_DATA_ID{
 #define SYS_GETCMD_HQEISPD                  (11)    //获取高速编码器速度
 /************************************************************************/
 
-
+#ifdef CMU_SUPPORT_CRD
 /*****************************坐标系数据操作指令序号**************************/
 //坐标系常规设置指令
 #define CRD_SETCMD_AXISMAP                  (1)     //设置轴映射表
@@ -231,6 +231,7 @@ typedef union _COM_DATA_ID{
 #define CRD_GETCMD_BASE_TOOL                (11)    //获取基本刀具号
 
 /******************************************************************************/
+#endif
 
 /*****************************轴数据操作指令序号*******************************/
 //轴(电机)常规设置指令
@@ -277,10 +278,15 @@ typedef union _COM_DATA_ID{
 #define IO_SETCMD_PWM_DUTY_RATIO            (3)     //设置IO板IO口PWM占空比
 #define IO_SETCMD_PWM_FRQ                   (4)     //设置IO板IO口PWM频率
 #define IO_SETCMD_HSPD_STATE                (5)     //设置高速IO口输出状态
+#define IO_SETCMD_MUTEX_MONO_PULSE          (6)     //设置互斥型脉冲IO口产生单脉冲
+#define IO_SETCMD_MUTEX_PULSE_TIMING        (7)     //互斥型脉冲时序设置
+#define IO_SETCMD_HSPD_EDGE_TRG_EN          (8)     //高速IO边沿触发使能
 
 //IO常规获取指令
 #define IO_GETCMD_HSPD_OUT_STATUS           (1)     //获取高速IO输出口状态
-#define IO_GETCMD_HSPD_IN_STATUS            (2)     //获取高速IO输入口状态    
+#define IO_GETCMD_HSPD_IN_STATUS            (2)     //获取高速IO输入口状态   
+#define IO_GETCMD_HSPD_EDGE_TRG_STATUS      (3)     //获取高速IO边沿触发状态
+
 /******************************************************************************/
 
 /*****************************DA/AD操作指令序号*******************************/

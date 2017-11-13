@@ -101,6 +101,9 @@ uBit32 u32Fun_u32_pu32_pu32(uBit32 ulDevNo, uBit32* pCmdType, uBit32 *pExeRes){r
 uBit32 u32Fun_32_32_pu32_pu32(Bit32 iCrdSysIndex, Bit32 iAxisIndex, uBit32 *pCmdType, uBit32 *pExeRes){return CMU_ERR_UNBAND;} 
 uBit32 u32Fun_u32_pu8_u32_u8(uBit32 b, uBit8* p, uBit32 c,uBit8 d){return CMU_ERR_UNBAND;}
 
+uBit32 u32Fun_u32_u8_u32(uBit32 a, uBit8 b, uBit32 c){return CMU_ERR_UNBAND;};
+
+
 //错误管理模块接口
 uBit32 GetErrorCodeFun(uBit32 *pulErrorCode)
 {
@@ -185,7 +188,24 @@ void CMU_InitExApi(void)
 
     if (m_sExternalFunTable.pf_GPIO_SetHSpdOutputState==0)
     m_sExternalFunTable.pf_GPIO_SetHSpdOutputState        =&u32Fun_u32_u32        ;
+    
+    //Duhanfeng 20171113 新增
+    if (m_sExternalFunTable.pf_GPIO_SetMutexMonoPulse==0)
+    m_sExternalFunTable.pf_GPIO_SetMutexMonoPulse        =&u32Fun_u32        ;
+    
+    if (m_sExternalFunTable.pf_GPIO_SetMutexPulseTiming==0)
+    m_sExternalFunTable.pf_GPIO_SetMutexPulseTiming        =&u32Fun_u32_u32        ;
+        
+    if (m_sExternalFunTable.pf_GPIO_SetHSpdEdgeTrgState==0)
+    m_sExternalFunTable.pf_GPIO_SetHSpdEdgeTrgState        =&u32Fun_u32_u8_u32        ;
+    
+    if (m_sExternalFunTable.pf_GPIO_GetHSpdEdgeTrgState==0)
+    m_sExternalFunTable.pf_GPIO_GetHSpdEdgeTrgState        =&u32Fun_u32        ;
 
+    
+    
+    
+        
     if (m_sExternalFunTable.pf_MDAC_SetHSpdDaData==0)
     m_sExternalFunTable.pf_MDAC_SetHSpdDaData        =&u32Fun_u32_u32        ;
 

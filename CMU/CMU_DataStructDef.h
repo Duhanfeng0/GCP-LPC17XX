@@ -70,13 +70,19 @@ typedef struct _cmu_external_fun_table
     uBit32 (*pf_GPIO_GetHSpdOutputStatus)(void);
     uBit32 (*pf_GPIO_GetHSpdInputStatus)(void);
     uBit32 (*pf_GPIO_SetHSpdOutputState)(uBit32 ulMask, uBit32 ulState);
+    
+    //Duhanfeng 20171113 新增
+    uBit32 (*pf_GPIO_SetMutexMonoPulse)(uBit32 ulIONO);                                 //设置互斥型脉冲IO口产生单脉冲
+    uBit32 (*pf_GPIO_SetMutexPulseTiming)(uBit32 ulActiveTime, uBit32 ulPassiveTime);   //互斥型脉冲时序设置
+    uBit32 (*pf_GPIO_SetHSpdEdgeTrgState)(uBit32 ulIONO, uBit8 uTrg, uBit32 ulIsEnable);//高速IO边沿触发使能
+    uBit32 (*pf_GPIO_GetHSpdEdgeTrgState)(uBit32 ulIONO);                               //获取高速IO边沿触发状态
+    
     uBit32 (*pf_MDAC_SetHSpdDaData)(uBit32 ulChIndex, uBit32 ulDaData);
     uBit32 (*pf_MDAC_GetHSpdDaData)(uBit32 ulChIndex, uBit32 *pDaData);
-    Bit32 (*pf_QEI_GetHSpdQeiPos)(void);
-    Bit32 (*pf_QEI_GetHSpdQeiSpeed)(void);
+    Bit32  (*pf_QEI_GetHSpdQeiPos)(void);
+    Bit32  (*pf_QEI_GetHSpdQeiSpeed)(void);
     
     uBit32 (*pf_SYS_IPREnable)(Bit32 iEnable);  //使能解释器
-    
     
     //--------------------------------------------参数管理模块------------------------------------------------
     uBit32 (*pf_SPM_SetSysCtrlParm)(SYS_CTRL_PARM* pSysCtrlParm);
@@ -133,7 +139,7 @@ typedef struct _cmu_external_fun_table
     uBit32 (*pf_CSM_SetMotorJogStop)(Bit32 iMotorNO);//电机停止    
     uBit32 (*pf_CSM_MotorJogEStop)(Bit32 iMotorNO);  //电机急停
     
-    #ifdef CMU_SUPPORT_CRD
+#ifdef CMU_SUPPORT_CRD
     //--------------------------------------------通道管理模块------------------------------------------------
     
     uBit32 (*pf_LAX_Home)(Bit32 iCrdSysIndex, Bit32 iAxisIndex, Bit32 iHomeFlag, Bit32 iWaitExeResult);//轴回零                        
@@ -281,7 +287,7 @@ typedef struct _cmu_external_fun_table
     
     //取当前程编位置（工件坐标系值）, 返回轴屏蔽字
     Bit32 (*pf_IPR_GetProgPos)(uBit32 ulCh, Bit32 *pPos);
-    #endif
+#endif
 
     
     

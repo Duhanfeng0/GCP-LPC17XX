@@ -198,12 +198,12 @@ void GC_CloseAllLock(void)
 
 
 /**
-  * @brief  控制指定门锁打开
+  * @brief  控制指定门锁打开(行列方式索引)
   * @param  nRowNumber 行数
   * @param  nColNumber 列数
   * @retval None
   */
-void GC_OpenLock(uBit16 nRowNumber, uBit16 nColNumber)
+void GC_OpenLockByPosition(uBit16 nRowNumber, uBit16 nColNumber)
 {
     //数据范围校验
     if ((nRowNumber >= GC_MAX_ROW_COUNT) || (nColNumber >= GC_MAX_COL_COUNT))
@@ -214,6 +214,18 @@ void GC_OpenLock(uBit16 nRowNumber, uBit16 nColNumber)
     m_ulLockCtrlMask[nRowNumber] |= 0x1 << nColNumber;
     SysTime_StartOneShot(&m_LockCtrlTimer, GC_GetLockPowerOnTime());
     
+}
+
+
+/**
+  * @brief  控制指定门锁打开(编号方式索引)
+  * @param  ulLockNO 编号
+  * @retval None
+  */
+void GC_OpenLockByNO(uBit32 ulLockNO)
+{
+    
+    GC_OpenLockByPosition(ulLockNO/GC_MAX_COL_COUNT, ulLockNO%GC_MAX_COL_COUNT);
 }
 
 

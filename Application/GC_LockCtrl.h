@@ -39,7 +39,15 @@ void GC_CloseAllLock(void);
   * @param  nColNumber 列数
   * @retval None
   */
-void GC_OpenLock(uBit16 nRowNumber, uBit16 nColNumber);
+void GC_OpenLockByPosition(uBit16 nRowNumber, uBit16 nColNumber);
+
+
+/**
+  * @brief  控制指定门锁打开(编号方式索引)
+  * @param  ulLockNO 编号
+  * @retval None
+  */
+void GC_OpenLockByNO(uBit32 ulLockNO);
 
 
 /**

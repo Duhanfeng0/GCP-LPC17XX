@@ -1713,29 +1713,60 @@ uBit32 Io_NomalSetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 
     switch(pRcvCtrlData->ulRevID.ulComDataID.ulCmdIndex)
     {
-    case IO_SETCMD_STATE:                    //设置IO板输出状态
+    case IO_SETCMD_STATE:                   //设置IO板输出状态
         {
             ulRet = m_sExternalFunTable.pf_IO_SetOutputStatus(ulIoNo, ulData, ulBitMask);
             break;
         }
-    case IO_SETCMD_PWM_ENABLE:                //设置IO板PWM功能，ulBitMask为IO引脚编号
+    case IO_SETCMD_PWM_ENABLE:              //设置IO板PWM功能，ulBitMask为IO引脚编号
         {
             ulRet = m_sExternalFunTable.pf_IO_SetOutPutPWMMode(ulIoNo, ulBitMask, ulData);
             break;
         }
-    case IO_SETCMD_PWM_DUTY_RATIO:            //设置IO板IO口PWM占空比，ulBitMask为IO引脚编号
+    case IO_SETCMD_PWM_DUTY_RATIO:          //设置IO板IO口PWM占空比，ulBitMask为IO引脚编号
         {
             ulRet = m_sExternalFunTable.pf_IO_SetOutPutPWMDuty(ulIoNo, ulBitMask, ulData);
             break;
         }
-    case IO_SETCMD_PWM_FRQ:            //设置IO板IO口PWM频率，ulBitMask为IO引脚编号
+    case IO_SETCMD_PWM_FRQ:                 //设置IO板IO口PWM频率，ulBitMask为IO引脚编号
         {
             ulRet = m_sExternalFunTable.pf_IO_SetOutPutPWMFreq(ulIoNo, ulBitMask, ulData);
             break;
         }
-    case IO_SETCMD_HSPD_STATE:            //设置高速IO口输出状态
+    case IO_SETCMD_HSPD_STATE:              //设置高速IO口输出状态
         {
             ulRet = m_sExternalFunTable.pf_GPIO_SetHSpdOutputState(ulBitMask, ulData);
+            break;
+        }
+    case IO_SETCMD_MUTEX_MONO_PULSE:        //设置互斥型脉冲IO口产生单脉冲
+        {
+            uBit32 ulIONO = 0;
+            memcpy(&ulIONO, pRcvCtrlData->pRevBuf, sizeof(uBit32));
+    
+            ulRet = m_sExternalFunTable.pf_GPIO_SetMutexMonoPulse(ulIONO);
+            break;
+        }
+    case IO_SETCMD_MUTEX_PULSE_TIMING:      //互斥型脉冲时序设置
+        {
+            uBit32 ulActiveTime = 0;
+            uBit32 ulPassiveTime = 0;
+            memcpy(&ulActiveTime,  pRcvCtrlData->pRevBuf, sizeof(uBit32));
+            memcpy(&ulPassiveTime, pRcvCtrlData->pRevBuf + sizeof(uBit32), sizeof(uBit32));
+            
+            ulRet = m_sExternalFunTable.pf_GPIO_SetMutexPulseTiming(ulActiveTime, ulPassiveTime);
+            break;
+        }
+    case IO_SETCMD_HSPD_EDGE_TRG_EN:        //高速IO边沿触发使能
+        {
+            uBit32 ulIONO = 0; 
+            uBit8  uTrg = 0;
+            uBit32 ulIsEnable = 0;
+            
+            memcpy(&ulIONO,     pRcvCtrlData->pRevBuf, sizeof(uBit32));
+            memcpy(&uTrg,       pRcvCtrlData->pRevBuf + sizeof(uBit32), sizeof(uBit8));
+            memcpy(&ulIsEnable, pRcvCtrlData->pRevBuf + sizeof(uBit32) + sizeof(uBit8), sizeof(uBit32));
+            
+            ulRet = m_sExternalFunTable.pf_GPIO_SetHSpdEdgeTrgState(ulIONO, uTrg, ulIsEnable);
             break;
         }
     default:break;
@@ -1767,20 +1798,30 @@ uBit32 Io_NomalGetCmdProcess(COM_RCV_CTRL_DATA *pRcvCtrlData)
 
     switch(pRcvCtrlData->ulRevID.ulComDataID.ulCmdIndex)
     {
-    case IO_GETCMD_HSPD_OUT_STATUS://获取高速IO输出口状态
+    case IO_GETCMD_HSPD_OUT_STATUS:     //获取高速IO输出口状态
         {
             *((uBit32*)pSendBuf) = m_sExternalFunTable.pf_GPIO_GetHSpdOutputStatus();
             ulRet = CMU_ERR_SUCCESS;
             CMU_AddToSendCtrlData(NULL,sizeof(uBit32));
         }
         break;
-    case IO_GETCMD_HSPD_IN_STATUS://获取高速IO输入口状态
+    case IO_GETCMD_HSPD_IN_STATUS:      //获取高速IO输入口状态
         {
             *((uBit32*)pSendBuf) = m_sExternalFunTable.pf_GPIO_GetHSpdInputStatus();
             ulRet = CMU_ERR_SUCCESS;
             CMU_AddToSendCtrlData(NULL,sizeof(uBit32));
         }
         break;
+    case IO_GETCMD_HSPD_EDGE_TRG_STATUS://获取高速IO边沿触发状态
+        {
+            uBit32 ulIONO = 0;
+            memcpy(&ulIONO, pRcvCtrlData->pRevBuf, sizeof(uBit32));
+            
+            *((uBit32*)pSendBuf) = m_sExternalFunTable.pf_GPIO_GetHSpdEdgeTrgState(ulIONO);
+            ulRet = CMU_ERR_SUCCESS;
+            CMU_AddToSendCtrlData(NULL,sizeof(uBit32));
+            break;
+        }
     default:break;
     }
     

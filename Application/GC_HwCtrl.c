@@ -20,6 +20,7 @@
 #include "GC_CtrlIOTable.h"
 #include "GC_SysParmMan.h"
 #include "GC_LockCtrl.h"
+#include "GC_HardwareDef.h"
 
 #include "../DataType/DataType.h"
 #include "../SysPeripheral/GPIO/GPIO_Man.h"
@@ -27,6 +28,8 @@
 #include "../SysPeripheral/SysTick/SysTimer.h"
 #include "../SysPeripheral/SysCtrl/SysCtrl.h"
 #include "../SysPeripheral/UART/UART.h"
+#include "../SysPeripheral/EXTI/EXTI.h"
+#include "../SysPeripheral/IRQ/IRQ_Man.h"
 
 #include "../PeriDrivers/NixieTube/NixieTube.h"
 #include "../PeriDrivers/Eeprom/Eeprom.h"
@@ -164,6 +167,74 @@ void GC_KeyProc(void)
     }
       
 }
+
+
+/*****************************************************************************
+ * 入书检测相关线程接口
+ ****************************************************************************/
+
+static uBit32 m_ulInBookResult = 0;  //入书结果,1为入书成功
+
+/**
+  * @brief  入书检测器中断处理
+  * @param  None
+  * @retval None
+  */
+static void GC_InBookExtiHandler(void)
+{
+    m_ulInBookResult = 1;
+    
+}
+
+/**
+  * @brief  入书检测器初始化
+  * @param  None
+  * @retval None
+  */
+void GC_InBookDetectorInit(void)
+{
+    EXTI_Init(GC_INPUT_IO_INC0, EXTI_TRG_RISING);   //上升沿作为触发条件
+    
+}
+
+
+/**
+  * @brief  入书检测器使能
+  * @param  ulIsEnable 使能标志
+  * @retval None
+  */
+void GC_InBookDetectorEnable(uBit32 ulIsEnable)
+{
+    if (ulIsEnable)
+    {
+        m_ulInBookResult = 0;
+        IRQ_SetTrgCallback(GC_InBookExtiHandler, GC_INBOOK_DETECTOR_EXTI_SOURCE);
+    }
+    else 
+    {
+        IRQ_ReleaseTrgCallback(GC_INBOOK_DETECTOR_EXTI_SOURCE);
+    }
+    
+    
+}
+
+
+/**
+  * @brief  入书结果获取
+  * @param  None
+  * @retval 0-未入书 1-入书成功
+  */
+uBit32 GC_GetInBookResult(void)
+{
+    
+    return m_ulInBookResult;
+}
+
+
+
+
+
+
 
 
 
