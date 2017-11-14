@@ -29,4 +29,4 @@ uBit32 EXTI_Init(uBit32 ulIntputNO, uBit8 uTrgSource);
 }
 #endif
 
-#endif /* __DEMO_H */
+#endif /* __EXTI_H */

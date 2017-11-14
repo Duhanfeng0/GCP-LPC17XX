@@ -70,7 +70,6 @@ static void I2C_Delay(void *data)
  * EEPROM相关控制接口
  ****************************************************************************/
 
-
 /**
   * @brief  EEPROM 读写有效校验
   * @param  None

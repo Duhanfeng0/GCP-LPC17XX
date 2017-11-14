@@ -37,14 +37,22 @@
 #include "../../SysPeripheral/SysTick/SysTimer.h"
 
 
-/* ---设备地址--- */
-#define AT_BASE_ADDR      (0XA0)
+/*****************************************************************************
+ * 私有成员定义及实现
+ ****************************************************************************/
 
-static I2C_BIT_OPS_TYPE         I2C_BitOps = {0};
-static I2C_BUS_DEVICE_OPS_TYPE  AT_I2C_DEV = {0};
+#define AT_BASE_ADDR            (0XA0)              //设备地址
 
-static AT24CXX_PAGE_SIZE AT_PAGE_SIZE;
+static I2C_BIT_OPS_TYPE         m_I2C_BitOps = {0}; //I2C 位操作接口
+static I2C_BUS_DEVICE_OPS_TYPE  m_AT_I2C_DEV = {0}; //I2C 设备接口
 
+static AT24CXX_PAGE_SIZE        AT_PAGE_SIZE;       //AT24CXX页大小
+
+
+
+/*****************************************************************************
+ * AT24CXX相关控制接口
+ ****************************************************************************/
 
 /**
   * @brief  设置外部控制接口
@@ -64,31 +72,30 @@ void AT24Cxx_InitInterface(void   *Data,
                            void   (*BitDelay)(void *Data),
                            AT24CXX_PAGE_SIZE    PAGE_SIZE)
 {
-    I2C_BitOps.Data = Data;
-    I2C_BitOps.pf_I2C_SetSDA = SetSDA;
-    I2C_BitOps.pf_I2C_SetSCL = SetSCL;
-    I2C_BitOps.pf_I2C_GetSDA = GetSDA;
-    I2C_BitOps.pf_I2C_GetSCL = GetSCL;
-    I2C_BitOps.pf_I2C_BitDelay = BitDelay;
+    m_I2C_BitOps.Data = Data;
+    m_I2C_BitOps.pf_I2C_SetSDA = SetSDA;
+    m_I2C_BitOps.pf_I2C_SetSCL = SetSCL;
+    m_I2C_BitOps.pf_I2C_GetSDA = GetSDA;
+    m_I2C_BitOps.pf_I2C_GetSCL = GetSCL;
+    m_I2C_BitOps.pf_I2C_BitDelay = BitDelay;
     
-    I2C_BitOps.nTimeOut = 50;
+    m_I2C_BitOps.nTimeOut = 50;
     
     //初始化I2C设备控制接口
-    I2C_BusDevieInit(&AT_I2C_DEV);
-    I2C_BusDeviceControl(&AT_I2C_DEV, I2C_DEV_CTRL_CLEAR_ALL_FLAGS, NULL);
-    I2C_BusDeviceControl(&AT_I2C_DEV, I2C_DEV_CTRL_SET_BIT_OPS, &I2C_BitOps);
-    I2C_BusDeviceControl(&AT_I2C_DEV, I2C_DEV_CTRL_SET_TIMEOUT, &I2C_BitOps.nTimeOut);
+    I2C_BusDevieInit(&m_AT_I2C_DEV);
+    I2C_BusDeviceControl(&m_AT_I2C_DEV, I2C_DEV_CTRL_CLEAR_ALL_FLAGS, NULL);
+    I2C_BusDeviceControl(&m_AT_I2C_DEV, I2C_DEV_CTRL_SET_BIT_OPS, &m_I2C_BitOps);
+    I2C_BusDeviceControl(&m_AT_I2C_DEV, I2C_DEV_CTRL_SET_TIMEOUT, &m_I2C_BitOps.nTimeOut);
     
     AT_PAGE_SIZE = PAGE_SIZE;
     
     //如果是32KBit以上的EEPROM,则设置为16位寄存器地址
     if (AT_PAGE_SIZE >= AT24C32_PAGE_SIZE)
     {
-        I2C_BusDeviceControl(&AT_I2C_DEV, I2C_DEV_CTRL_REG_ADDR_16BIT, NULL);
+        I2C_BusDeviceControl(&m_AT_I2C_DEV, I2C_DEV_CTRL_REG_ADDR_16BIT, NULL);
     }
     
 }
-
 
 
 /**
@@ -101,12 +108,11 @@ void AT24Cxx_WriteByte(uBit16 nAddr, uBit8 cWriteData)
 {
     uBit16 cDevAddr = AT_BASE_ADDR | ((AT_PAGE_SIZE >= AT24C32_PAGE_SIZE) ? 0 : ((nAddr&0x0700)>>7));
     
-    I2C_BusDeviceControl(&AT_I2C_DEV, I2C_DEV_CTRL_SET_DEV_ADDR, &cDevAddr);
-    I2C_BusDeviceWrite(&AT_I2C_DEV, nAddr, &cWriteData, 1);
+    I2C_BusDeviceControl(&m_AT_I2C_DEV, I2C_DEV_CTRL_SET_DEV_ADDR, &cDevAddr);
+    I2C_BusDeviceWrite(&m_AT_I2C_DEV, nAddr, &cWriteData, 1);
     
     SysTime_DelayMs(5);   //写操作时,必须要等待5ms,等待数据从缓存器往AT24Cxx写入完成
 }
-
 
 
 /**
@@ -119,12 +125,11 @@ uBit8 AT24Cxx_RandomRead(uBit16 nAddr)
     uBit8 cReadData = 0;
     uBit16 cDevAddr = AT_BASE_ADDR | ((AT_PAGE_SIZE >= AT24C32_PAGE_SIZE) ? 0 : ((nAddr&0x0700)>>7));
     
-    I2C_BusDeviceControl(&AT_I2C_DEV, I2C_DEV_CTRL_SET_DEV_ADDR, &cDevAddr);
-    I2C_BusDeviceRead(&AT_I2C_DEV, nAddr, &cReadData, 1);
+    I2C_BusDeviceControl(&m_AT_I2C_DEV, I2C_DEV_CTRL_SET_DEV_ADDR, &cDevAddr);
+    I2C_BusDeviceRead(&m_AT_I2C_DEV, nAddr, &cReadData, 1);
     
     return cReadData;
 }
-
 
 
 /**
@@ -140,13 +145,12 @@ void AT24Cxx_PageWrite(uBit16 nAddr, const uBit8 *pWriteBuff, uBit8 cNum)
 {
     uBit16 cDevAddr = AT_BASE_ADDR | ((AT_PAGE_SIZE >= AT24C32_PAGE_SIZE) ? 0 : ((nAddr&0x0700)>>7));
     
-    I2C_BusDeviceControl(&AT_I2C_DEV, I2C_DEV_CTRL_SET_DEV_ADDR, &cDevAddr);
-    I2C_BusDeviceWrite(&AT_I2C_DEV, nAddr, pWriteBuff, cNum);
+    I2C_BusDeviceControl(&m_AT_I2C_DEV, I2C_DEV_CTRL_SET_DEV_ADDR, &cDevAddr);
+    I2C_BusDeviceWrite(&m_AT_I2C_DEV, nAddr, pWriteBuff, cNum);
     
     SysTime_DelayMs(5);   //写操作时,必须要等待5ms,等待数据从缓存器往AT24Cxx写入完成
     
 }
-
 
 
 /**
@@ -165,11 +169,10 @@ void AT24Cxx_SequentialRead(uBit16 nAddr, uBit8 *pReadBuff, uBit16 nNum)
     
     cDevAddr = AT_BASE_ADDR | ((AT_PAGE_SIZE >= AT24C32_PAGE_SIZE) ? 0 : ((nAddr&0x0700)>>7));
     
-    I2C_BusDeviceControl(&AT_I2C_DEV, I2C_DEV_CTRL_SET_DEV_ADDR, &cDevAddr);
-    I2C_BusDeviceRead(&AT_I2C_DEV, nAddr, pReadBuff, nNum);
+    I2C_BusDeviceControl(&m_AT_I2C_DEV, I2C_DEV_CTRL_SET_DEV_ADDR, &cDevAddr);
+    I2C_BusDeviceRead(&m_AT_I2C_DEV, nAddr, pReadBuff, nNum);
     
 }
-
 
 
 /**
@@ -193,7 +196,6 @@ void AT24Cxx_ReadMultiBytes(uBit16 nAddr, uBit8 *pReadBuff, uBit32 iNum)
     AT24Cxx_SequentialRead(nAddr+i*256, &pReadBuff[i*256], iNum%256);
     
 }
-
 
 
 /**
