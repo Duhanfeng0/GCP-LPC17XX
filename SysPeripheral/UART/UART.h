@@ -38,6 +38,14 @@ uBit32 UART_Close(uBit8 uUartNode);
 
 
 /**
+  * @brief  串口发送状态获取
+  * @param  uUartNode 串口节点号
+  * @retval 0-发送中 非0-发送完成
+  */
+uBit32 UART_GetTransStatus(uBit8 uUartNode);
+
+
+/**
   * @brief  数据接收处理(接收线程)
   * @param  uUartNode 串口节点号
   * @retval None

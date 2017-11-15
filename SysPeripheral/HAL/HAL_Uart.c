@@ -89,8 +89,8 @@ static RINGBUFF_T m_RxRing[HAL_UART_NODE_NUM] = {0};
 static uint8_t    m_uRxBuff[HAL_UART_NODE_NUM][UART_RB_SIZE] = {0};
 
 //串口相关变量
-static const uint32_t  m_LpcUartBaseGroup[HAL_UART_NODE_NUM] = {LPC_UART0_BASE, LPC_UART1_BASE, LPC_UART2_BASE, LPC_UART3_BASE};    //串口的基地址
-static const IRQn_Type m_LpcUartIrqGroup [HAL_UART_NODE_NUM] = {UART0_IRQn, UART1_IRQn, UART2_IRQn, UART3_IRQn};   //中断向量
+static LPC_USART_T * const USART[HAL_UART_NODE_NUM] = {(LPC_USART_T *)LPC_UART0_BASE, (LPC_USART_T *)LPC_UART1_BASE, (LPC_USART_T *)LPC_UART2_BASE, (LPC_USART_T *)LPC_UART3_BASE};    //串口的基地址
+static const IRQn_Type USART_IRQn[HAL_UART_NODE_NUM] = {UART0_IRQn, UART1_IRQn, UART2_IRQn, UART3_IRQn};   //中断向量
 
 //DMA相关变量
 static uint8_t m_uDmaFreeChannel[HAL_UART_NODE_NUM] = {0};    //串口的空闲通道
@@ -178,11 +178,11 @@ static void HAL_UART_RxItInit(uint8_t uUartNode)
     
     
     //使能外设中断
-    Chip_UART_IntEnable((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode], UART_IER_RBRINT);
+    Chip_UART_IntEnable(USART[uUartNode], UART_IER_RBRINT);
     
     //使能内核中断
-    NVIC_SetPriority(m_LpcUartIrqGroup[uUartNode], 1);
-    NVIC_EnableIRQ(m_LpcUartIrqGroup[uUartNode]);
+    NVIC_SetPriority(USART_IRQn[uUartNode], 1);
+    NVIC_EnableIRQ(USART_IRQn[uUartNode]);
 
     //设置中断回调
     switch (uUartNode)
@@ -278,16 +278,16 @@ void HAL_UART_Init(uint8_t uUartNode, uint32_t ulBaudRate)
     UART_IO_Init(uUartNode);
     
     //初始化串口基本配置
-    Chip_UART_Init((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode]);
+    Chip_UART_Init(USART[uUartNode]);
 
     //初始化波特率
-    Chip_UART_SetBaud((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode], ulBaudRate);
+    Chip_UART_SetBaud(USART[uUartNode], ulBaudRate);
     
     //配置工作模式(8-1-N)
-    Chip_UART_ConfigData((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode], UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS);
+    Chip_UART_ConfigData(USART[uUartNode], UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS);
     
     //配置FIFO(使能并支持DMA模式)
-    Chip_UART_SetupFIFOS((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode], (UART_FCR_FIFO_EN | UART_FCR_RX_RS | UART_FCR_TX_RS | UART_FCR_DMAMODE_SEL | UART_FCR_TRG_LEV3));
+    Chip_UART_SetupFIFOS(USART[uUartNode], (UART_FCR_FIFO_EN | UART_FCR_RX_RS | UART_FCR_TX_RS | UART_FCR_DMAMODE_SEL | UART_FCR_TRG_LEV3));
     
     //初始化中断配置(Rx)
     HAL_UART_RxItInit(uUartNode);
@@ -296,7 +296,7 @@ void HAL_UART_Init(uint8_t uUartNode, uint32_t ulBaudRate)
     HAL_UART_DmaTxInit(uUartNode);
     
     //使能发送
-    Chip_UART_TXEnable((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode]);
+    Chip_UART_TXEnable(USART[uUartNode]);
     
 }
 
@@ -312,22 +312,36 @@ void HAL_UART_Enable(uint8_t uUartNode, bool bIsEnable)
     if (bIsEnable)
     {
         //开接收中断
-        Chip_UART_IntEnable((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode], UART_IER_RBRINT);
+        Chip_UART_IntEnable(USART[uUartNode], UART_IER_RBRINT);
         
         //使能发送
-        Chip_UART_TXEnable((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode]);
+        Chip_UART_TXEnable(USART[uUartNode]);
         
     }
     else 
     {
         //关接收中断
-        Chip_UART_IntDisable((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode], UART_IER_RBRINT);
+        Chip_UART_IntDisable(USART[uUartNode], UART_IER_RBRINT);
         
         //禁止发送
-        Chip_UART_TXDisable((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode]);
+        Chip_UART_TXDisable(USART[uUartNode]);
         
     }
    
+}
+
+
+/**
+  * @brief  串口发送状态获取
+  * @param  uUartNode 串口节点号
+  * @retval 0-发送中 非0-发送完成
+  */
+uint32_t HAL_UART_GetTransStatus(uint8_t uUartNode)
+{
+    
+    ;
+    
+    return (Chip_UART_ReadLineStatus(USART[uUartNode]) & UART_LSR_TEMT) != 0;
 }
 
 
@@ -339,7 +353,7 @@ void HAL_UART_Enable(uint8_t uUartNode, bool bIsEnable)
   */
 void HAL_UART_SendByte(uint8_t uUartNode, uint8_t uData)
 {
-    Chip_UART_SendByte((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode], uData);
+    Chip_UART_SendByte(USART[uUartNode], uData);
     
 }
 
@@ -353,7 +367,7 @@ void HAL_UART_SendByte(uint8_t uUartNode, uint8_t uData)
   */
 void HAL_UART_SendBuff(uint8_t uUartNode, void *pSBuff, uint32_t ulSize)
 {
-    Chip_UART_SendBlocking((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode], pSBuff, ulSize);
+    Chip_UART_SendBlocking(USART[uUartNode], pSBuff, ulSize);
 
 }
 
@@ -389,7 +403,25 @@ void HAL_UART_SendStr(uint8_t uUartNode, uint8_t *pSBuff)
 uint32_t HAL_UART_RecvBuff(uint8_t uUartNode, void *pRBuff, uint32_t ulSize)
 {
     
-    return Chip_UART_ReadRB((LPC_USART_T *)m_LpcUartBaseGroup[uUartNode], &m_RxRing[uUartNode], pRBuff, ulSize);
+    return Chip_UART_ReadRB(USART[uUartNode], &m_RxRing[uUartNode], pRBuff, ulSize);
+}
+
+
+/**
+  * @brief  数据接收处理(非阻塞接收线程)
+  * @param  uUartNode 串口节点号
+  * @retval None
+  * @retval 本函数是应用于非中断接收的情况,单独一个线程做数据接收
+  */
+void HAL_UART_RecvHandler(uint8_t uUartNode)
+{
+    uint8_t uData = 0;
+    
+    if (Chip_UART_Read(USART[uUartNode], &uData, 1))
+    {
+        RingBuffer_Insert(&m_RxRing[uUartNode], &uData);
+    }
+    
 }
 
 

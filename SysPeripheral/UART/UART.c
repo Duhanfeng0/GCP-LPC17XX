@@ -62,6 +62,18 @@ uBit32 UART_Close(uBit8 uUartNode)
     
     return 0;
 }
+    
+    
+/**
+  * @brief  串口发送状态获取
+  * @param  uUartNode 串口节点号
+  * @retval 0-发送中 非0-发送完成
+  */
+uBit32 UART_GetTransStatus(uBit8 uUartNode)
+{
+    
+    return HAL_UART_GetTransStatus(uUartNode);
+}
 
 
 /**
@@ -72,7 +84,7 @@ uBit32 UART_Close(uBit8 uUartNode)
   */
 void UART_RecvHandler(uBit8 uUartNode)
 {
-    
+    HAL_UART_RecvHandler(uUartNode);
     
 }
 
@@ -93,6 +105,21 @@ uBit32 UART_SendBuff(uBit8 uUartNode, uBit8 *pSBuff, uBit32 ulSize)
 
 
 /**
+  * @brief  串口数据发送(阻塞)
+  * @param  uUartNode 串口节点号
+  * @param  pSBuff 数据缓冲区地址
+  * @param  nSize 发送的数量
+  * @retval None
+  */
+uBit32 UART_BlockSendBuff(uBit8 uUartNode, uBit8 *pSBuff, uBit32 ulSize)
+{
+    HAL_UART_SendBuff(uUartNode, pSBuff, ulSize);
+    
+    return 0;
+}
+
+
+/**
   * @brief  串口接收(非阻塞)
   * @param  uUartNode 串口节点号
   * @param  pRBuff 要接收的缓冲区
@@ -104,3 +131,4 @@ uBit32 UART_RecvBuff(uBit8 uUartNode, uBit8 *pRBuff, uBit32 ulSize)
     
     return HAL_UART_RecvBuff(uUartNode, pRBuff, ulSize);
 }
+

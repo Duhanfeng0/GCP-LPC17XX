@@ -43,6 +43,14 @@ void HAL_UART_Enable(uint8_t uUartNode, bool bIsEnable);
 
 
 /**
+  * @brief  串口发送状态获取
+  * @param  uUartNode 串口节点号
+  * @retval 0-发送中 非0-发送完成
+  */
+uint32_t HAL_UART_GetTransStatus(uint8_t uUartNode);
+
+
+/**
   * @brief  单字节发送(阻塞)
   * @param  uUartNode 串口节点号
   * @param  uData 要发送的字节数据
@@ -79,6 +87,15 @@ void HAL_UART_SendStr(uint8_t uUartNode, uint8_t *pSBuff);
   * @retval uint32_t 实际上接收到的数据长度
   */
 uint32_t HAL_UART_RecvBuff(uint8_t uUartNode, void *pRBuff, uint32_t ulSize);
+
+
+/**
+  * @brief  数据接收处理(非阻塞接收线程)
+  * @param  uUartNode 串口节点号
+  * @retval None
+  * @retval 本函数是应用于非中断接收的情况,单独一个线程做数据接收
+  */
+void HAL_UART_RecvHandler(uint8_t uUartNode);
 
 
 /*****************************************************************************
