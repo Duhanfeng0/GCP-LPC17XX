@@ -45,7 +45,7 @@ NO20102A---初始版本
 #define APP_VER_STR                     "HC01XXXA"
 #define APP_VER_PART                    SYS_PART_SLC   //组件号
 #define APP_VER_NO0                     (2)
-#define APP_VER_NO1                     (10)
+#define APP_VER_NO1                     (11)
 
 
 #define MAINCTRL_TYPE_BOARD10           (0) //主控卡
